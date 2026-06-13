@@ -1,0 +1,129 @@
+---
+project: agent-eval-harness
+phase: P3→P4
+status: pre-build  # planning / pre-build / building / shipping / done
+created: 2026-06-13
+soft_deadline: 2026-09-15   # 40-repo eval study 完整版 ship（Wave 3 简历 v2.0）
+hard_deadline: 2026-10-15   # OSS v0.5 + 文章
+---
+
+# `agent-eval-harness` — 单文件进度板
+
+> Project 7（合并原 P7 40-repo eval + 原 P9 开源框架 · 2026-06-13）。
+> repo:`~/dev/agent-eval-harness`(离开 iCloud) · remote: https://github.com/LovRanRan/agent-eval-harness
+> 单文件进度板 — Description + Dashboard + Roadmap + Logs + Pickup Protocol。
+
+---
+
+## 📌 Project Description
+
+> **`agent-eval-harness`** 是 Phase 3→4 的 **开源 agent 评测框架 + 40-OSS-repo Supervisor-vs-ReAct benchmark**:既给别人一个可复用的 agent eval 工具,又内置一个评测 `wayfinder` 的旗舰基准。
+
+**项目定位**
+
+从 Project 6 `wayfinder`(能跑的 multi-agent 产品)推进到**量化系统质量**:给面试官 rigorous eval 数据(99% new grad 没有),并证明能把评测抽象成可复用框架。合并原因:框架 = benchmark 的基础设施,分开做要把评测基建搭两遍。
+
+**技术契约**（对应 `final_checklist.md` Project 7 acceptance,Commit 0 后细化）
+
+- **数据集**：40 OSS repo(10 web frameworks + 10 ML libs + 10 CLI tools + 10 distributed systems),每个 repo ≥1 个可跑 pytest/jest 套件(mcp-test-runner 前提);先 smoke 筛掉破损套件。
+- **任务桶**：Architecture Understanding / Function Tracing / Claim Verification / Bug Localization。
+- **架构对比**：Wayfinder Supervisor vs ReAct（Swarm 砍掉)。
+- **Metrics(4)**：routing accuracy / factual correctness / citation grounding / **verification_rate**(题材升级后最强差异化数字)。
+- **Judges**：LLM-as-judge(Claude + GPT)+ ground-truth 对比;self-consistency(CoT-SC)。
+- **框架 API**：datasets / runners / metrics / judges / failure-mode taxonomy(hallucination / tool misuse / retrieval / reasoning)/ token+cost tracking / CLI runner / 集成 adapter(LangGraph 等)。
+- **产物**：`EVAL_REPORT.md` + 4 张 SVG 图 + 一句话 headline number(进简历)+ OSS v1.0(docs/tests/examples)。
+- **成本**：40 task × 3 self-consistency × 2 arch ≈ 240 runs · ~$50–$200/full eval;预算紧时 Haiku 做 sub-agent + Sonnet 做 supervisor + judge。
+
+**项目领域**
+
+> ⬜ 待你手填(例如:"AI/devtools agent 的评测方法论 + codebase-understanding benchmark")。
+
+**简历差异化**
+
+> ⬜ 待你手填(3–5 条,本框架比 generic eval 强在哪;参考:verification_rate 量化反幻觉、自评 wayfinder、开源可复用)。
+
+**跨项目衔接**
+
+- ⬅ **Project 6 `wayfinder`**：本项目的评测对象 + 数据来源(读 wayfinder 的 run/traces);v0.5 也在 P3 `arxiv-rag` / P4 `single-file-explainer` 上跑作 examples。
+- ➡ **简历 / 文章**：headline number 直接进 wayfinder 简历 bullet + 第 1 篇技术文章("Supervisor vs ReAct on 40 OSS repos with embedded verification")。
+
+**成功判定**
+
+- [ ] `final_checklist.md` Project 7 acceptance 全部 `[x]`
+- [ ] GitHub 仓库公开 + OSS v0.5(docs/tests/examples)
+- [ ] `EVAL_REPORT.md` + 4 SVG 图 + 一句话 headline number
+- [ ] `TASKS.md` Project 7 ship 行 `[x]`
+
+---
+
+## 🔒 Core Principles
+
+> ⬜ 待你手填(项目级硬规则;参考方向:① 评测先于自夸——任何 headline number 必须可复现;② golden set + LLM-judge 双轨,judge bias 要显式控制;③ 成本透明,每个 metric 标 run 数/花费)。
+
+---
+
+## ✍️ Ownership Build Protocol
+
+沿用 Project 6 的四步法:Haichuan 写设计 + skeleton → Codex 补局部实现/debug/test → Haichuan 反向解释。评测框架的 **eval API / metric 定义 / dataset schema / judge 策略** 由 Haichuan 主导,Codex 只补 boilerplate / 局部实现。不知道怎么写 design note 时进 guided design mode(一次一问)。
+
+---
+
+## 📊 Dashboard
+
+| | |
+|---|---|
+| 当前阶段 | **Pre-build**(repo 已建 + clone 到 ~/dev,progress.md 已起) |
+| 进度 | 0 / N acceptance criteria done |
+| 完成 commits | 0 |
+| 软截止 | 2026-09-15 |
+| 硬截止 | 2026-10-15 |
+| **Today's North Star** | ⬜ 待你手填 |
+
+---
+
+## 🗺 Roadmap
+
+### Pre-build（从 `fast_path.md` Project 7 节）
+
+- [x] 必读清单第 3 篇(Hamel "Your AI Product Needs Evals")—— 已读
+- [ ] LangSmith experiments 一页 — https://docs.smith.langchain.com/evaluation(~30min）
+- [ ] (建议先决定)框架 vs 研究的边界:eval API 设计 + dataset schema(Haichuan 写 design note)
+
+### Build（按 commit 颗粒度,架构由 Haichuan 主导）
+
+- [/] **Commit 0.a** — repo init + scope doc + README 概要(进行中:repo 已建,progress.md 已写,scaffold 待提交)
+- [ ] **Commit 0.b** — uv / ruff / mypy / pytest 脚手架 + CI
+- [ ] **Commit 1** — core eval API 骨架(datasets / runner / metric / judge 接口)
+- [ ] **Commit 2** — 小规模评测先跑(10–15 repo,Supervisor vs ReAct)→ 拿 wayfinder 简历数字
+- [ ] **Commit 3** — 扩到完整 40-OSS-repo 数据集 + 4 metrics(含 verification_rate)
+- [ ] **Commit 4** — failure-mode taxonomy + token/cost tracking + CLI runner
+- [ ] **Commit 5** — v0.5 跑通 P3/P4/P6 作 examples + EVAL_REPORT.md + 4 SVG 图
+
+### Ship
+
+- [ ] 全部 acceptance `[x]`
+- [ ] README 终版 + OSS v1.0(docs/tests/examples)
+- [ ] `EVAL_REPORT.md` + headline number 进简历
+- [ ] 写 retro
+- [ ] `TASKS.md` ship 行 `[x]`
+
+---
+
+## 📝 Daily Logs
+
+> 每个 commit / 每个工作日加一条,倒序(最新在最上)。
+
+### 2026-06-13 — Commit 0.a(起步)— `Repo init + progress.md`
+
+- **做了什么**:开 Project 7 `agent-eval-harness`(合并原 P7+P9)。GitHub 建公开 repo + clone 到 `~/dev/agent-eval-harness`(离开 iCloud,按 `new_project_setup_playbook.md`)。Cowork 挂载,写好本 progress.md(自动填 pitch / 技术契约 / 跨项目衔接 / 成功判定 / Pre-build),搭最小脚手架(README/.gitignore/pyproject/空包)。
+- **自己设计了什么**:暂无(架构/eval API 设计留给正式开工时 Haichuan 主导)。
+- **下一步**:① 你手填 4 项(项目领域 / 简历差异化 / Core Principles / Today's North Star);② 先回 wayfinder 收尾(Commit 23 反向讲解);③ 回来再 Commit 0.b 配脚手架 + 写 eval API design note。
+
+---
+
+## 🔄 Pickup Protocol
+
+1. 看 Dashboard 当前阶段 + Today's North Star。
+2. 看 Roadmap 找下一个 `[ ]` / `[/]`。
+3. 看最新 Daily Log。
+4. 注意:这是合并原 P7+P9 的项目;repo 在 `~/dev/agent-eval-harness`,全局笔记在 `Final_checklist/`。
