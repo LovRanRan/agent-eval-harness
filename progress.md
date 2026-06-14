@@ -6,12 +6,7 @@ created: 2026-06-13
 soft_deadline: 2026-09-15   # 40-repo eval study 完整版 ship（Wave 3 简历 v2.0）
 hard_deadline: 2026-10-15   # OSS v0.5 + 文章
 ---
-
 # `agent-eval-harness` — 单文件进度板
-
-> Project 7（合并原 P7 40-repo eval + 原 P9 开源框架 · 2026-06-13）。
-> repo:`~/dev/agent-eval-harness`(离开 iCloud) · remote: https://github.com/LovRanRan/agent-eval-harness
-> 单文件进度板 — Description + Dashboard + Roadmap + Logs + Pickup Protocol。
 
 ---
 
@@ -49,10 +44,10 @@ hard_deadline: 2026-10-15   # OSS v0.5 + 文章
 
 **成功判定**
 
-- [ ] `final_checklist.md` Project 7 acceptance 全部 `[x]`
-- [ ] GitHub 仓库公开 + OSS v0.5(docs/tests/examples)
-- [ ] `EVAL_REPORT.md` + 4 SVG 图 + 一句话 headline number
-- [ ] `TASKS.md` Project 7 ship 行 `[x]`
+- [ ]  `final_checklist.md` Project 7 acceptance 全部 `[x]`
+- [ ]  GitHub 仓库公开 + OSS v0.5(docs/tests/examples)
+- [ ]  `EVAL_REPORT.md` + 4 SVG 图 + 一句话 headline number
+- [ ]  `TASKS.md` Project 7 ship 行 `[x]`
 
 ---
 
@@ -70,14 +65,15 @@ hard_deadline: 2026-10-15   # OSS v0.5 + 文章
 
 ## 📊 Dashboard
 
-| | |
-|---|---|
-| 当前阶段 | **Pre-build**(repo 已建 + clone 到 ~/dev,progress.md 已起) |
-| 进度 | 0 / N acceptance criteria done |
-| 完成 commits | 0 |
-| 软截止 | 2026-09-15 |
-| 硬截止 | 2026-10-15 |
-| **Today's North Star** | ⬜ 待你手填 |
+
+|                        |                                                            |
+| ---------------------- | ---------------------------------------------------------- |
+| 当前阶段               | **Pre-build**(repo 已建 + clone 到 ~/dev,progress.md 已起) |
+| 进度                   | 0 / N acceptance criteria done                             |
+| 完成 commits           | 0                                                          |
+| 软截止                 | 2026-09-15                                                 |
+| 硬截止                 | 2026-10-15                                                 |
+| **Today's North Star** | ⬜ 待你手填                                                |
 
 ---
 
@@ -85,27 +81,28 @@ hard_deadline: 2026-10-15   # OSS v0.5 + 文章
 
 ### Pre-build（从 `fast_path.md` Project 7 节）
 
-- [x] 必读清单第 3 篇(Hamel "Your AI Product Needs Evals")—— 已读
-- [ ] LangSmith experiments 一页 — https://docs.smith.langchain.com/evaluation(~30min）
-- [ ] (建议先决定)框架 vs 研究的边界:eval API 设计 + dataset schema(Haichuan 写 design note)
+- [X]  必读清单第 3 篇(Hamel "Your AI Product Needs Evals")—— 已读
+- [ ]  LangSmith experiments 一页 — https://docs.smith.langchain.com/evaluation(~30min）
+- [ ]  (建议先决定)框架 vs 研究的边界:eval API 设计 + dataset schema(Haichuan 写 design note)
 
 ### Build（按 commit 颗粒度,架构由 Haichuan 主导）
 
 - [/] **Commit 0.a** — repo init + scope doc + README 概要(进行中:repo 已建,progress.md 已写,scaffold 待提交)
-- [ ] **Commit 0.b** — uv / ruff / mypy / pytest 脚手架 + CI
-- [ ] **Commit 1** — core eval API 骨架(datasets / runner / metric / judge 接口)
-- [ ] **Commit 2** — 小规模评测先跑(10–15 repo,Supervisor vs ReAct)→ 拿 wayfinder 简历数字
-- [ ] **Commit 3** — 扩到完整 40-OSS-repo 数据集 + 4 metrics(含 verification_rate)
-- [ ] **Commit 4** — failure-mode taxonomy + token/cost tracking + CLI runner
-- [ ] **Commit 5** — v0.5 跑通 P3/P4/P6 作 examples + EVAL_REPORT.md + 4 SVG 图
+
+- [ ]  **Commit 0.b** — uv / ruff / mypy / pytest 脚手架 + CI
+- [ ]  **Commit 1** — core eval API 骨架(datasets / runner / metric / judge 接口)
+- [ ]  **Commit 2** — 小规模评测先跑(10–15 repo,Supervisor vs ReAct)→ 拿 wayfinder 简历数字
+- [ ]  **Commit 3** — 扩到完整 40-OSS-repo 数据集 + 4 metrics(含 verification_rate)
+- [ ]  **Commit 4** — failure-mode taxonomy + token/cost tracking + CLI runner
+- [ ]  **Commit 5** — v0.5 跑通 P3/P4/P6 作 examples + EVAL_REPORT.md + 4 SVG 图
 
 ### Ship
 
-- [ ] 全部 acceptance `[x]`
-- [ ] README 终版 + OSS v1.0(docs/tests/examples)
-- [ ] `EVAL_REPORT.md` + headline number 进简历
-- [ ] 写 retro
-- [ ] `TASKS.md` ship 行 `[x]`
+- [ ]  全部 acceptance `[x]`
+- [ ]  README 终版 + OSS v1.0(docs/tests/examples)
+- [ ]  `EVAL_REPORT.md` + headline number 进简历
+- [ ]  写 retro
+- [ ]  `TASKS.md` ship 行 `[x]`
 
 ---
 
