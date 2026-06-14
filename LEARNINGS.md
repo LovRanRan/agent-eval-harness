@@ -5,6 +5,30 @@
 
 ---
 
+## Commit 8 (live wiring) — wayfinder live adapter (2026-06-14)
+
+### 🧠 Concepts internalized
+
+- Integrating with a real agent means matching its actual API contract, read from source: Wayfinder is async — `POST /explain` returns a `job_id`, you poll `GET /status/{job_id}` until `status ∈ {completed, failed}`, then map its `RunSummary`. Reading the schema first beats guessing the shape.
+- Map only what the endpoint actually exposes. Wayfinder's `/status` gives claim *counts* (verified/unverified/contradicted), not individual claim texts — enough for verification_rate, but `cited_symbols` has no source there, so citation_grounding is honestly left empty rather than faked.
+- A `transport` parameter (defaulting to `None`) is the clean test seam for an httpx client: production passes nothing; tests pass `httpx.MockTransport` and exercise the full post→poll→map loop with zero network.
+- Failure mapping: a `status == "failed"` run raises inside the invoke, so the runner's `_execute` records it as `RunResult.error` — the eval keeps going.
+
+### ⚠️ Gotchas debugged
+
+- Reality-check on resources by reading config, not assuming: wayfinder's `.env.example` showed it runs on **OpenAI gpt-5.5** (not Anthropic) and ships `WAYFINDER_VERIFIER_RUNNER=placeholder` for public deploys — meaning the live deployment wouldn't produce a *real* verification_rate. The Anthropic key only powers the harness's own judge. Caught this before spending anything on a run that would've been meaningless.
+- Rewiring `build_runner` made an import (`ReActBaselineRunner`) unused → ruff F401, and invalidated the old "defers to Commit 8" test. Changing a factory means revisiting its imports and its tests together.
+
+### 💼 Interview soundbites
+
+- "I wired the harness to the real Wayfinder by reading its API: async `/explain` + `/status` polling, mapping its RunSummary into my normalized RunResult, with an httpx MockTransport test that covers the whole poll loop without a live server."
+- "I verify what the system actually exposes before trusting a metric — Wayfinder's status endpoint gives claim counts but not cited symbols, so I compute verification_rate from it and leave citation_grounding empty rather than fabricate grounding."
+
+### 📚 Sources
+
+- httpx MockTransport — https://www.python-httpx.org/advanced/transports/#mock-transports
+- Wayfinder API source — ~/dev/wayfinder/src/wayfinder/api/{main,schemas}.py
+
 ## Commit 6 — CLI runner (2026-06-14)
 
 ### 🧠 Concepts internalized

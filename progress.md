@@ -70,8 +70,9 @@ hard_deadline: 2026-10-15   # OSS v0.5 + 文章
 | ---------------------- | ---------------------------------------------------------- |
 | 当前阶段               | **Building — Phase 1 完成**(最小可跑框架 C1–C6 全绿);下一步 = Phase 2 数据集策划/真跑(需 API key + wayfinder) |
 | 进度                   | 0 / N acceptance criteria done(脚手架不计 acceptance）     |
-| 完成 commits           | 0.a · 0.b · CI fix · C1–C5 · **C6 CLI runner**(Phase 1 最小框架完成) |
-| Gate 状态              | ✅ ruff / ruff-format / mypy --strict(7 files)/ pytest(46 passed);CI uv-native(`uv sync`+`uv run`) |
+| 完成 commits           | 0.a · 0.b · CI fix · C1–C6(Phase 1)· **C8 wayfinder live adapter(代码)** |
+| Gate 状态              | ✅ ruff / ruff-format / mypy --strict(9 files)/ pytest(52 passed);CI uv-native(`uv sync`+`uv run`) |
+| 🔑 资源状态            | Anthropic key ✅(judge,`.env` gitignored,已验证 HTTP 200)· OpenAI key ⬜(wayfinder 需)· Docker ⬜(起栈需) |
 | 软截止                 | 2026-09-15                                                 |
 | 硬截止                 | 2026-10-15                                                 |
 | **Today's North Star** | ⬜ 待你手填(建议:写 Commit 1 eval-API design note —— datasets/runner/metric/judge schema) |
@@ -104,7 +105,7 @@ hard_deadline: 2026-10-15   # OSS v0.5 + 文章
 ### Build — Phase 2：小规模 eval（尽早拿数字喂简历）
 
 - [ ] **Commit 7** — 策划 10–15 repo 数据集(4 桶,每个 repo ≥1 可跑 pytest/jest,smoke 筛掉破损套件)+ 标注 ground truth(query / ≥3 key facts / expected route / verifier test_id / bug-fix files)
-- [ ] **Commit 8** — 🚀 跑小规模 eval(Supervisor vs ReAct)→ CSV → 算出 headline number → 立刻进 wayfinder 简历 bullet(依赖:API key + wayfinder + 3 MCP 可跑;在 Mac 上跑)
+- [/] **Commit 8** — live wiring + 🚀 跑小规模 eval。**已做(代码)**:`live/wayfinder.py`(`map_run_summary` + `wayfinder_invoke`:POST /explain → 轮询 /status → 映射 RunSummary;`[live]` extra httpx;httpx.MockTransport 测全链路)+ `cli.build_runner` 接 `WAYFINDER_URL`。Anthropic key 已验证(judge 用)。**待你资源才能真跑**:OpenAI key(wayfinder 跑在 gpt-5.5)+ Docker 起 6 服务栈(含 sandbox-worker 才有真 verification_rate)+ ReAct baseline 接线(需 live 迭代)+ 数据集 GT(你审)。gate 全绿(52 tests)
 
 ### Build — Phase 3：完整 40-repo benchmark + 报告
 
@@ -134,6 +135,13 @@ hard_deadline: 2026-10-15   # OSS v0.5 + 文章
 ## 📝 Daily Logs
 
 > 每个 commit / 每个工作日加一条,倒序(最新在最上)。
+
+### 2026-06-14 — Commit 8(代码)— `wayfinder live invoke adapter`
+
+- **做了什么**:`live/wayfinder.py` —— `map_run_summary`(wayfinder `RunSummary` → 标准 raw dict:`final_output`→answer、verified/unverified/contradicted_count→claims、trace_metadata→route/tokens/cost best-effort、cited_symbols 暂空因 /status 只给计数)+ `wayfinder_invoke`(POST /explain → 轮询 /status 到 completed/failed → 映射;failed 抛错被 runner 转 error;超时抛 TimeoutError;`transport` 参数供 httpx.MockTransport 测)。`[live]` extra(httpx)。`cli.build_runner` 接 `WAYFINDER_URL`/`WAYFINDER_TOKEN`。`tests/test_live_wayfinder.py` 5 测试(MockTransport 跑通 post+poll+failed)。
+- **资源核对(读 wayfinder 源码后)**:wayfinder 跑在 **OpenAI gpt-5.5**(不是 Anthropic);公开部署默认 `WAYFINDER_VERIFIER_RUNNER=placeholder`,真 verification_rate 必须本地起 sandbox-worker。所以真跑要 OpenAI key + Docker 栈,Anthropic key 只够 harness 的 judge。Anthropic key 已放 `.env` 并验证可用(HTTP 200,Haiku)。
+- **下一步(需你)**:① OpenAI key 放进同一 `.env` 的 `OPENAI_API_KEY`;② 装/起 Docker。就位后我:起 wayfinder 栈 → 接 ReAct baseline → 跑小规模 eval。
+- **Gate**:ruff/format/mypy --strict(9)/pytest(52 passed)全绿。
 
 ### 2026-06-14 — Commit 6 — `CLI runner`(Phase 1 完成)
 

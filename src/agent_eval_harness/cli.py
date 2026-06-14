@@ -10,13 +10,14 @@ until then `build_runner` raises with guidance. `run_eval` takes an injectable
 from __future__ import annotations
 
 import argparse
+import os
 from collections.abc import Callable, Sequence
 from pathlib import Path
 
 from agent_eval_harness.datasets import load_tasks
 from agent_eval_harness.evaluate import evaluate, write_csv
 from agent_eval_harness.metric import Metric, RoutingAccuracy, VerificationRate
-from agent_eval_harness.runner import ReActBaselineRunner, Runner, WayfinderSupervisorRunner
+from agent_eval_harness.runner import Runner, WayfinderSupervisorRunner
 
 ARCHITECTURES = ("wayfinder_supervisor", "react_baseline")
 
@@ -33,13 +34,28 @@ def default_metrics() -> list[Metric]:
 
 
 def build_runner(arch: str) -> Runner:
-    """Construct a Runner with its live invocation. Live wiring lands in Commit 8."""
+    """Construct a Runner with its live invocation.
+
+    `wayfinder_supervisor` is wired over HTTP when `WAYFINDER_URL` is set (needs a
+    running Wayfinder + the `[live]` extra). The ReAct baseline is wired in a
+    follow-up; inject a `runner_factory` to run offline with a fake.
+    """
     if arch not in ARCHITECTURES:
         raise ValueError(f"unknown arch {arch!r}; choose from {ARCHITECTURES}")
-    cls = WayfinderSupervisorRunner if arch == "wayfinder_supervisor" else ReActBaselineRunner
+    if arch == "wayfinder_supervisor":
+        base_url = os.environ.get("WAYFINDER_URL")
+        if not base_url:
+            raise RuntimeError(
+                "set WAYFINDER_URL to a running Wayfinder (e.g. http://localhost:8000) "
+                "to run the wayfinder_supervisor architecture"
+            )
+        from agent_eval_harness.live.wayfinder import wayfinder_invoke
+
+        return WayfinderSupervisorRunner(
+            wayfinder_invoke(base_url, auth_token=os.environ.get("WAYFINDER_TOKEN"))
+        )
     raise NotImplementedError(
-        f"live invocation for {cls.__name__} is wired in Commit 8 "
-        "(inject a runner_factory to run offline)"
+        "ReAct baseline live wiring is a follow-up; inject a runner_factory to run offline"
     )
 
 

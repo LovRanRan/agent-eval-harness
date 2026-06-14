@@ -42,9 +42,21 @@ def test_run_eval_writes_csv_with_injected_runner(tmp_path: Path) -> None:
     assert all(r["routing_accuracy"] == "1.0" for r in rows)
 
 
-def test_build_runner_defers_live_wiring() -> None:
-    with pytest.raises(NotImplementedError, match="Commit 8"):
+def test_build_runner_wayfinder_needs_url(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.delenv("WAYFINDER_URL", raising=False)
+    with pytest.raises(RuntimeError, match="WAYFINDER_URL"):
         build_runner("wayfinder_supervisor")
+
+
+def test_build_runner_wayfinder_wired_when_url_set(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setenv("WAYFINDER_URL", "http://localhost:8000")
+    runner = build_runner("wayfinder_supervisor")
+    assert runner.arch == "wayfinder_supervisor"
+
+
+def test_build_runner_react_deferred() -> None:
+    with pytest.raises(NotImplementedError, match="ReAct"):
+        build_runner("react_baseline")
 
 
 def test_build_runner_rejects_unknown_arch() -> None:
