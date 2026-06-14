@@ -136,6 +136,18 @@ hard_deadline: 2026-10-15   # OSS v0.5 + 文章
 
 > 每个 commit / 每个工作日加一条,倒序(最新在最上)。
 
+### 2026-06-14 — Live stack WORKING + first grounded run (no commit; ops milestone)
+
+- **里程碑**:wayfinder live stack 跑通,产出**真实 grounded 输出**。click 被 ingest,mcp-repo-mapper 返回真实依赖图(Python 63 files,完整 `src.click.*` import graph),gpt-5.5 写出有据的架构答案,`errors:[]`。证明全链:GitHub ingest → MCP 分析 → 多 agent LLM → RunSummary →(我的 adapter 映射)→ judge。
+- **关键解锁(linchpin)**:`mcp_http` 模式需要 project5 MCP 以 streamable-http 跑在 8101/8102,但 ① `WAYFINDER_START_PROJECT5_HTTP_MCP` 在 wayfinder src 里**根本没实现**;② project5 server 默认 `mcp.run(transport="stdio")`,连 Docker `--profile mcp` 也是 stdio。**解法**:自己用 FastMCP 起 HTTP —— `/tmp/run_mapper.py` = `from mcp_repo_mapper.server import mcp; mcp.run(transport="streamable-http", host="127.0.0.1", port=8101)`(ast 同理 8102)。`uv run python /tmp/run_xxx.py`。8101/8102 GET 返回 406 = MCP 端点正常(要 POST+Accept)。
+- **可复现启动配方**(下次直接照做):
+  1. 起 2 个 MCP:`cd ~/dev/project5/mcp-repo-mapper && uv run python /tmp/run_mapper.py`(8101)+ `cd ~/dev/project5/mcp-ast-explorer && uv run python /tmp/run_ast.py`(8102)。
+  2. 起 wayfinder:`cd ~/dev/wayfinder`,`set -a; . ~/dev/agent-eval-harness/.env; set +a`(给 OPENAI/ANTHROPIC key),env:`WAYFINDER_REQUIRE_AUTH=0 RUN_STORE=memory ARCHITECTURE_SCANNER=mcp_http ENTRY_SCANNER=mcp_http PROJECT5_REPO_MAPPER_MCP_URL=http://127.0.0.1:8101/mcp PROJECT5_AST_EXPLORER_MCP_URL=http://127.0.0.1:8102/mcp VERIFIER_RUNNER=placeholder LLM_ROUTING=openai FINAL_WRITER=openai OPENAI_MODEL=gpt-5.5 MCP_TOOL_TIMEOUT_SECONDS=30 RUNTIME_BUILD_TIMEOUT_SECONDS=45 GRAPH_NODE_TIMEOUT_SECONDS=90 ENABLE_GITHUB_INGESTION=1 GITHUB_REPO_ALLOWLIST='pallets/click,pallets/flask,psf/requests'`,`uv run uvicorn wayfinder.api.main:app --port 8000`。
+  3. 冒烟:`POST /explain {repo_url,query}` → 轮询 `GET /status/{job_id}`。
+- **已知 gap(影响 metric)**:① `/status` 的 `trace_metadata` **没有 intent/route 字段** → routing_accuracy 暂无来源(需另找,或从 partial_summaries/agent 推);② `tokens=0 cost_usd=0` → wayfinder 没算 token/cost,成本对比要另估;③ `verified_count=0`(verifier=placeholder)→ verification_rate 要真值得起 Docker sandbox-worker;④ cited_symbols 不在 /status → citation_grounding 暂空。**factual_correctness(judge)可以真出** —— 这是 headline "factual accuracy" 的主指标。
+- **运行中进程**(本次 session,可能已停):MCP 8101/8102 + wayfinder 8000。下次按上面配方重起。
+- **下一步**:① 建 ReAct baseline(对比组,缺它没 headline);② 跑 harness 12 任务拿 factual_correctness;③ 起 Docker sandbox-worker 拿真 verification_rate;④ 解决 routing/cost/citation 来源。
+
 ### 2026-06-14 — Commit 7 — `dataset small_v1 (12 tasks)`
 
 - **做了什么**:`datasets/small_v1.jsonl` 12 任务(architecture/function_tracing/claim_verification/bug_localization 各 3)+ `datasets/README.md`。在 sandbox clone 了 click/flask/requests/httpx/rich(都有 pytest),pin 到 HEAD SHA,**对着真源码/测试核 GT**:flask `dispatch_request`(app.py:966,被 full_dispatch_request 调)、requests `rebuild_auth`(sessions.py:309,被 resolve_redirects 调,跨 host 删 Authorization)、3 个 claim 绑真 nodeid(`tests/test_requests.py::TestRequests::test_auth_is_stripped_on_http_downgrade` / `..._fragment_maintained_on_redirect` / `..._cookie_sent_on_redirect`)、bug_fix_files 用确认存在的 src/ 路径。`expected_route` 用 wayfinder intent(architectural/behavioral/debug)。
