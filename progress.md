@@ -68,12 +68,13 @@ hard_deadline: 2026-10-15   # OSS v0.5 + 文章
 
 |                        |                                                            |
 | ---------------------- | ---------------------------------------------------------- |
-| 当前阶段               | **Pre-build**(repo 已建 + clone 到 ~/dev,progress.md 已起) |
-| 进度                   | 0 / N acceptance criteria done                             |
-| 完成 commits           | 0                                                          |
+| 当前阶段               | **Building**(脚手架 + CI 就绪;下一步 = Commit 1 eval API design note,Haichuan 主导) |
+| 进度                   | 0 / N acceptance criteria done(脚手架不计 acceptance）     |
+| 完成 commits           | 0.a(repo init `8206a48`)· 0.b(CI + gate scaffold `501e4f2`) |
+| Gate 状态              | ✅ ruff / ruff-format / mypy --strict / pytest(2 passed)；CI 改 uv-native(`uv sync`+`uv run`)后两 job 应转绿 |
 | 软截止                 | 2026-09-15                                                 |
 | 硬截止                 | 2026-10-15                                                 |
-| **Today's North Star** | ⬜ 待你手填                                                |
+| **Today's North Star** | ⬜ 待你手填(建议:写 Commit 1 eval-API design note —— datasets/runner/metric/judge schema) |
 
 ---
 
@@ -87,10 +88,9 @@ hard_deadline: 2026-10-15   # OSS v0.5 + 文章
 
 ### Build（按 commit 颗粒度,架构由 Haichuan 主导）
 
-- [/] **Commit 0.a** — repo init + scope doc + README 概要(进行中:repo 已建,progress.md 已写,scaffold 待提交)
-
-- [ ]  **Commit 0.b** — uv / ruff / mypy / pytest 脚手架 + CI
-- [ ]  **Commit 1** — core eval API 骨架(datasets / runner / metric / judge 接口)
+- [x] **Commit 0.a** — repo init + scope doc + README 概要(已 push `8206a48`)
+- [x] **Commit 0.b** — uv / ruff / mypy / pytest 脚手架 + CI(已 push `501e4f2`;CI 首跑因 `uv pip install --system` 撞 PEP 668 失败,已改 `uv sync`+`uv run` 修复,待重推)
+- [ ]  **Commit 1** — core eval API 骨架(datasets / runner / metric / judge 接口)← **design note 先行(Haichuan 主导)**,见 `DESIGN.md`
 - [ ]  **Commit 2** — 小规模评测先跑(10–15 repo,Supervisor vs ReAct)→ 拿 wayfinder 简历数字
 - [ ]  **Commit 3** — 扩到完整 40-OSS-repo 数据集 + 4 metrics(含 verification_rate)
 - [ ]  **Commit 4** — failure-mode taxonomy + token/cost tracking + CLI runner
@@ -109,6 +109,20 @@ hard_deadline: 2026-10-15   # OSS v0.5 + 文章
 ## 📝 Daily Logs
 
 > 每个 commit / 每个工作日加一条,倒序(最新在最上)。
+
+### 2026-06-14 — CI fix — `uv sync + uv run`
+
+- **症状**:0.b push(`501e4f2`)后 GitHub Actions 两个 job(3.11/3.12)都 exit code 2,14s 快速失败。
+- **根因**:`uv pip install --system` 装进 runner 的 externally-managed 系统 Python(PEP 668),uv 拒绝 → exit 2。代码/config 没问题(干净安装下 4 个 gate 全绿)。
+- **修复**:改 uv-native 链 —— `uv sync --extra dev --python <ver>`(建隔离 + 矩阵正确的 venv)+ `uv run ruff/mypy/pytest`;`setup-uv@v3→v5`(顺手清 Node20 deprecation warning)。sandbox 验证 `uv sync`+ 四 gate 全绿,待 Mac 上提交 push。
+
+### 2026-06-14 — Commit 0.b — `CI + lint/type/test scaffold`
+
+- **做了什么**:补脚手架使 gate 从第一行代码起就绿。`.github/workflows/ci.yml`(GitHub Actions 3.11/3.12 矩阵)、`tests/test_smoke.py`(包可导入 + version 非空)、`tests/__init__.py`、根 `Makefile`(`make gate` 镜像 CI)。新建 `LEARNINGS.md`(4 节结构)+ `DESIGN.md`(Commit 1 eval API 的 guided 设计模板,Haichuan 主导)。
+- **Gate 验证**:sandbox 全绿 —— ruff `All checks passed`、ruff format ok、mypy `Success`(干净副本;mount 上 `.mypy_cache` sqlite 锁会假报 INTERNAL ERROR,已 gitignore)、pytest 2 passed。
+- **自己设计了什么**:无架构决策(纯 boilerplate,守 ownership 边界 rule 15)。eval API 设计留 Commit 1。
+- **踩坑**:从 Cowork sandbox 对挂载的 `~/dev` repo 跑 `git commit` 不安全 —— 挂载层不让 git unlink `.git/*.lock`,破坏原子性,导致 0.b 被复制成两个 commit + remote ref 自己乱跳。教训记忆 [[sandbox-git-mount-lock]]:**此后 sandbox 只写文件,git 全在 Mac 上做**。已在 Mac 上 `reset --soft` 收成单 commit `501e4f2`。
+- **下一步**:① push CI 修复 → 确认 Actions 绿;② 你手填 progress.md 4 项 + `DESIGN.md` 4 个抽象决策;③ 进 guided design mode 落 Commit 1 skeleton。
 
 ### 2026-06-13 — Commit 0.a(起步)— `Repo init + progress.md`
 
