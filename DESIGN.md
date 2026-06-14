@@ -129,8 +129,10 @@ Dataset(tasks.jsonl) ──> Runner[arch] ──> RunResult ──┐
 
 | # | Decision | Locked value | Date |
 |---|---|---|---|
-| 1 | Task schema + disk format | ⬜ | |
-| 2 | RunResult + Runner Protocol | ⬜ | |
-| 3 | Metric + MetricScore | ⬜ | |
-| 4 | Judge + JudgeVerdict | ⬜ | |
-| 5 | Module/file layout under `src/agent_eval_harness/` | ⬜ | |
+| 1 | Task schema + disk format | Single frozen `Task` dataclass with optional bucket-specific fields (`verifier_test_id`, `claim_under_test`, `bug_fix_files`); one `tasks.jsonl`, one task/line with a `bucket` field. `Dataset = list[Task]`. Per-bucket required-field validation deferred to `validate_task` (Commit 2). | 2026-06-14 |
+| 2 | RunResult + Runner Protocol | `RunResult` is architecture-blind (judge/metrics read only typed fields; adapter trace hidden in `raw`). Errors via `RunResult.error`, never raised. `Claim` carries `label` (verified/unverified/contradicted) + `risk_level` + `test_id`. `Runner` = `Protocol` with `arch: str` + `run(task) -> RunResult`. | 2026-06-14 |
+| 3 | Metric + MetricScore | `Metric` = `Protocol` with `name` + `score(task, result) -> MetricScore`; `MetricScore.value` normalized to [0,1] + `detail` dict. Deterministic metrics implement directly; judged metric delegates to `Judge` + self-consistency wrapper (Commit 4). | 2026-06-14 |
+| 4 | Judge + JudgeVerdict | `Judge` = `Protocol` with `judge(task, result) -> JudgeVerdict`; verdict carries `score` + `reasoning` + `flagged_hallucinations` for auditability (explicit bias control). Self-consistency (3 runs, var<0.1) applied on top in Commit 4. | 2026-06-14 |
+| 5 | Module/file layout under `src/agent_eval_harness/` | `datasets.py` / `runner.py` / `metric.py` / `judge.py`; deps flow `metric,judge → datasets,runner` and `runner → datasets` (no cycles). `__init__.py` re-exports the public API. | 2026-06-14 |
+
+> **Status (2026-06-14):** Commit 1 schema locked + skeleton shipped (Protocols + frozen/slots dataclasses, zero logic). Open `⬜ 你来定` prompts above are kept as design rationale; concrete logic lands per-commit (loaders C2 · deterministic metrics C3 · judge C4 · runners C5).
