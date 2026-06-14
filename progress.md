@@ -70,8 +70,8 @@ hard_deadline: 2026-10-15   # OSS v0.5 + 文章
 | ---------------------- | ---------------------------------------------------------- |
 | 当前阶段               | **Building**(脚手架 + CI 就绪;下一步 = Commit 1 eval API design note,Haichuan 主导) |
 | 进度                   | 0 / N acceptance criteria done(脚手架不计 acceptance）     |
-| 完成 commits           | 0.a · 0.b · CI fix · C1 skeleton · **C2 datasets layer** |
-| Gate 状态              | ✅ ruff / ruff-format / mypy --strict(5 files)/ pytest(18 passed);CI uv-native(`uv sync`+`uv run`) |
+| 完成 commits           | 0.a · 0.b · CI fix · C1 · C2 · **C3 deterministic metrics** |
+| Gate 状态              | ✅ ruff / ruff-format / mypy --strict(5 files)/ pytest(25 passed);CI uv-native(`uv sync`+`uv run`) |
 | 软截止                 | 2026-09-15                                                 |
 | 硬截止                 | 2026-10-15                                                 |
 | **Today's North Star** | ⬜ 待你手填(建议:写 Commit 1 eval-API design note —— datasets/runner/metric/judge schema) |
@@ -96,7 +96,7 @@ hard_deadline: 2026-10-15   # OSS v0.5 + 文章
 - [x] **Commit 0.b** — uv / ruff / mypy / pytest 脚手架 + CI(已 push;CI 首跑撞 PEP 668 `--system`,改 `uv sync`+`uv run` 修好 `4de3404`;remote = `9d8dd11`,gate 全绿)
 - [x] **Commit 1** — core eval API 骨架:`DESIGN.md` 5 项决策定稿 + `datasets`/`runner`/`metric`/`judge` 四模块(`Task`/`RunResult`/`Claim`/`MetricScore`/`JudgeVerdict` frozen dataclass + `Runner`/`Metric`/`Judge` Protocol),纯类型契约无逻辑;ruff/format/mypy --strict(5 files)/pytest(9)全绿
 - [x] **Commit 2** — datasets 层:`load_tasks`(JSONL,跳空行/注释,报行号)+ `validate_task`(按桶校验:≥3 facts / claim_verification 需 claim / bug_localization 需 fix files)+ `DatasetError` + fixture `mini_tasks.jsonl`(4 桶各 1)+ 10 个测试;gate 全绿(18 tests)
-- [ ] **Commit 3** — 确定性 metrics:`routing_accuracy` / `citation_grounding`(AST 反查)/ `verification_rate`(从 claim 标签算)实现 + 单测(用 fixture RunResult)
+- [x] **Commit 3** — 确定性 metrics:`RoutingAccuracy` / `CitationGrounding`(注入 `SymbolResolver`,生产接 mcp-ast-explorer)/ `VerificationRate`(verified+contradicted 占比)实现 + 7 测试;gate 全绿(25 tests)
 - [ ] **Commit 4** — LLM-as-judge:`factual_correctness` judge(Claude 结构化输出)+ self-consistency 包装(3 跑,variance<0.1)+ judge bias 披露 + mock LLM 测试
 - [ ] **Commit 5** — runner + 架构 adapter:`RunResult` 归一化 + Wayfinder Supervisor adapter + ReAct baseline adapter(`create_react_agent` 同 5 MCP tools)+ token/cost 捕获 + mock 测试
 - [ ] **Commit 6** — 最小 CLI runner:`eval run --dataset <f> --arch <a> → CSV` + 配置加载 + 端到端(mock)测试
@@ -134,6 +134,13 @@ hard_deadline: 2026-10-15   # OSS v0.5 + 文章
 ## 📝 Daily Logs
 
 > 每个 commit / 每个工作日加一条,倒序(最新在最上)。
+
+### 2026-06-14 — Commit 3 — `deterministic metrics`
+
+- **做了什么**:`metric.py` 加三个确定性 metric 实现 + `SymbolResolver` 类型。`RoutingAccuracy`(route_taken vs expected_route)、`CitationGrounding`(注入 resolver 判断 cited symbol 是否真存在,去重,空引用=1.0 但 detail 记 total=0)、`VerificationRate`((verified+contradicted)/total,空=0.0)。`tests/test_metrics.py` 7 测试。
+- **设计点**:`CitationGrounding` 用注入式 `SymbolResolver = Callable[[str],bool]`,生产接 mcp-ast-explorer,测试注 fake —— metric 本身保持纯函数可测。
+- **Gate**:ruff/format/mypy --strict(5)/pytest(25 passed)全绿。
+- **下一步**:Commit 4 — LLM-as-judge(factual_correctness)+ self-consistency 包装(mock 测试)。
 
 ### 2026-06-14 — Commit 2 — `datasets layer`
 

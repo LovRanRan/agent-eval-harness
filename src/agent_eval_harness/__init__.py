@@ -20,7 +20,14 @@ from agent_eval_harness.datasets import (
     validate_task,
 )
 from agent_eval_harness.judge import Judge, JudgeVerdict
-from agent_eval_harness.metric import Metric, MetricScore
+from agent_eval_harness.metric import (
+    CitationGrounding,
+    Metric,
+    MetricScore,
+    RoutingAccuracy,
+    SymbolResolver,
+    VerificationRate,
+)
 from agent_eval_harness.runner import (
     Claim,
     ClaimLabel,
@@ -34,6 +41,7 @@ __version__ = "0.0.1"
 __all__ = [
     "BUCKETS",
     "Bucket",
+    "CitationGrounding",
     "Claim",
     "ClaimLabel",
     "Dataset",
@@ -43,9 +51,12 @@ __all__ = [
     "Metric",
     "MetricScore",
     "RiskLevel",
+    "RoutingAccuracy",
     "RunResult",
     "Runner",
+    "SymbolResolver",
     "Task",
+    "VerificationRate",
     "__version__",
     "load_tasks",
     "validate_task",

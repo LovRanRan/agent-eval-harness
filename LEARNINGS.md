@@ -5,6 +5,28 @@
 
 ---
 
+## Commit 3 — deterministic metrics (2026-06-14)
+
+### 🧠 Concepts internalized
+
+- Three of the four metrics are deterministic (no LLM): routing_accuracy is exact-match, verification_rate is a ratio over claim labels, citation_grounding is a ratio over resolvable symbols. Keeping them LLM-free makes them cheap, reproducible, and immune to judge variance.
+- **Dependency injection over hard-coding**: `CitationGrounding` takes a `SymbolResolver = Callable[[str], bool]`. In production it wraps mcp-ast-explorer; in tests a lambda. The metric stays a pure, fast unit — the expensive/IO part is the injected collaborator.
+- Edge cases are design decisions worth recording in `detail`: empty citations → 1.0 (nothing is hallucinated) but `total == 0` is surfaced so a non-citing agent can't hide; empty claims → verification_rate 0.0.
+- `MetricScore.detail` carries the breakdown (counts, the ungrounded symbols) so the eventual EVAL_REPORT can explain *why* a score is what it is, not just the number.
+
+### ⚠️ Gotchas debugged
+
+- De-dup cited symbols with `dict.fromkeys(...)` before scoring — it preserves order and avoids letting a repeated citation skew the grounding ratio; it also calls the (potentially expensive) resolver once per unique symbol.
+
+### 💼 Interview soundbites
+
+- "verification_rate is the metric that justifies the verifier: it's the share of an agent's claims that got a definitive verified/contradicted verdict from real test execution, so I can show whether grounding actually happened rather than asserting it did."
+- "I inject the AST symbol resolver into the citation-grounding metric, so the anti-hallucination check is a pure, unit-testable function and the expensive AST lookup is swappable."
+
+### 📚 Sources
+
+- `dict.fromkeys` for order-preserving dedupe — https://docs.python.org/3/library/stdtypes.html#dict.fromkeys
+
 ## Commit 2 — datasets layer (2026-06-14)
 
 ### 🧠 Concepts internalized
