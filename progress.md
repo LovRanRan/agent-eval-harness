@@ -136,6 +136,15 @@ hard_deadline: 2026-10-15   # OSS v0.5 + 文章
 
 > 每个 commit / 每个工作日加一条,倒序(最新在最上)。
 
+### 2026-06-14 — verification_rate 调查:被 wayfinder verifier 触发卡住(重要)
+
+- **做了什么**:sandbox-worker 用 host uvicorn 起在 8110(health 200),wayfinder 切 `WAYFINDER_VERIFIER_RUNNER=sandboxed_mcp` + `WAYFINDER_TEST_SANDBOX_URL=http://127.0.0.1:8110`,启动时的 sandbox health check 通过。
+- **结果**:两次 claim 风格查询(① 自然语言"verify…" ② 直接点名 `tests/test_requests.py::TestRequests::test_auth_is_stripped_on_http_downgrade`)都**没触发测试执行** —— `test_results` 空、verified/unverified/contradicted 全 0。agent 自己说"no test was run / no verified claims"。
+- **根因**:不是 sandbox 没起,也不是 test-runner MCP 缺失(`test_runner` 在 `project5.py` **故意没有 `http_url_env`**,executable claim 走 sandbox-worker,这条已接通)。真正卡在**上游**:wayfinder 的 agent 没有产出"带具体 test_id 的高风险 claim"并路由给 verifier→sandbox。即使点名测试也没跑。
+- **结论**:verification_rate > 0 **不是配置能解决的**,要改/调 wayfinder 自身的 claim 生成 + verifier 路由(它历史上 empty-evidence 那条线就是这块)。属于 wayfinder 本体 R&D,跨 session。
+- **可达 vs 不可达**:factual_correctness 干净可出(judge + grounded answer 都通);routing 可从 partial_summaries 反推;cost ReAct 侧可测、wayfinder 侧需估;**verification_rate 受阻于 wayfinder verifier 触发**;citation 需从答案抽符号 + ast 反查(中等)。
+- **建议**:先落 factual_correctness(+ 尽量 routing/citation)的真数字(ReAct baseline + 全量跑),verification_rate 当作独立的 wayfinder 调优子任务。
+
 ### 2026-06-14 — 决策:走完整 4-metric 路线(David 选定)
 
 - **决策**:David 要**完整 4 metric**(不只 factual_correctness)。即含 verification_rate(核心差异化)。
