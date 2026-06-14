@@ -19,6 +19,7 @@ from dataclasses import dataclass, field
 from typing import Any, Protocol, runtime_checkable
 
 from agent_eval_harness.datasets import Task
+from agent_eval_harness.judge import Judge
 from agent_eval_harness.runner import RunResult
 
 # Resolves whether a cited code symbol / file path actually exists in the repo.
@@ -110,5 +111,30 @@ class VerificationRate:
                 "verified": verified,
                 "contradicted": contradicted,
                 "unverified": unverified,
+            },
+        )
+
+
+class JudgeMetric:
+    """Adapts a `Judge` into the `Metric` contract (the `factual_correctness` metric).
+
+    Wrap a `SelfConsistentJudge` to fold self-consistency into the score; the
+    verdict's reasoning, flagged hallucinations, and raw aggregation are carried
+    through into `MetricScore.detail` for the report.
+    """
+
+    def __init__(self, judge: Judge, name: str = "factual_correctness") -> None:
+        self.name = name
+        self._judge = judge
+
+    def score(self, task: Task, result: RunResult) -> MetricScore:
+        verdict = self._judge.judge(task, result)
+        return MetricScore(
+            self.name,
+            verdict.score,
+            {
+                "reasoning": verdict.reasoning,
+                "flagged_hallucinations": verdict.flagged_hallucinations,
+                "judge_raw": verdict.raw,
             },
         )

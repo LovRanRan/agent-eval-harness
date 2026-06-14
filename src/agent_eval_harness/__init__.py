@@ -19,9 +19,17 @@ from agent_eval_harness.datasets import (
     load_tasks,
     validate_task,
 )
-from agent_eval_harness.judge import Judge, JudgeVerdict
+from agent_eval_harness.judge import (
+    AnthropicChatModel,
+    ChatModel,
+    FactualCorrectnessJudge,
+    Judge,
+    JudgeVerdict,
+    SelfConsistentJudge,
+)
 from agent_eval_harness.metric import (
     CitationGrounding,
+    JudgeMetric,
     Metric,
     MetricScore,
     RoutingAccuracy,
@@ -40,13 +48,17 @@ __version__ = "0.0.1"
 
 __all__ = [
     "BUCKETS",
+    "AnthropicChatModel",
     "Bucket",
+    "ChatModel",
     "CitationGrounding",
     "Claim",
     "ClaimLabel",
     "Dataset",
     "DatasetError",
+    "FactualCorrectnessJudge",
     "Judge",
+    "JudgeMetric",
     "JudgeVerdict",
     "Metric",
     "MetricScore",
@@ -54,6 +66,7 @@ __all__ = [
     "RoutingAccuracy",
     "RunResult",
     "Runner",
+    "SelfConsistentJudge",
     "SymbolResolver",
     "Task",
     "VerificationRate",

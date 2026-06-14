@@ -70,8 +70,8 @@ hard_deadline: 2026-10-15   # OSS v0.5 + 文章
 | ---------------------- | ---------------------------------------------------------- |
 | 当前阶段               | **Building**(脚手架 + CI 就绪;下一步 = Commit 1 eval API design note,Haichuan 主导) |
 | 进度                   | 0 / N acceptance criteria done(脚手架不计 acceptance）     |
-| 完成 commits           | 0.a · 0.b · CI fix · C1 · C2 · **C3 deterministic metrics** |
-| Gate 状态              | ✅ ruff / ruff-format / mypy --strict(5 files)/ pytest(25 passed);CI uv-native(`uv sync`+`uv run`) |
+| 完成 commits           | 0.a · 0.b · CI fix · C1 · C2 · C3 · **C4 LLM-judge + self-consistency** |
+| Gate 状态              | ✅ ruff / ruff-format / mypy --strict(5 files)/ pytest(34 passed);CI uv-native(`uv sync`+`uv run`) |
 | 软截止                 | 2026-09-15                                                 |
 | 硬截止                 | 2026-10-15                                                 |
 | **Today's North Star** | ⬜ 待你手填(建议:写 Commit 1 eval-API design note —— datasets/runner/metric/judge schema) |
@@ -97,7 +97,7 @@ hard_deadline: 2026-10-15   # OSS v0.5 + 文章
 - [x] **Commit 1** — core eval API 骨架:`DESIGN.md` 5 项决策定稿 + `datasets`/`runner`/`metric`/`judge` 四模块(`Task`/`RunResult`/`Claim`/`MetricScore`/`JudgeVerdict` frozen dataclass + `Runner`/`Metric`/`Judge` Protocol),纯类型契约无逻辑;ruff/format/mypy --strict(5 files)/pytest(9)全绿
 - [x] **Commit 2** — datasets 层:`load_tasks`(JSONL,跳空行/注释,报行号)+ `validate_task`(按桶校验:≥3 facts / claim_verification 需 claim / bug_localization 需 fix files)+ `DatasetError` + fixture `mini_tasks.jsonl`(4 桶各 1)+ 10 个测试;gate 全绿(18 tests)
 - [x] **Commit 3** — 确定性 metrics:`RoutingAccuracy` / `CitationGrounding`(注入 `SymbolResolver`,生产接 mcp-ast-explorer)/ `VerificationRate`(verified+contradicted 占比)实现 + 7 测试;gate 全绿(25 tests)
-- [ ] **Commit 4** — LLM-as-judge:`factual_correctness` judge(Claude 结构化输出)+ self-consistency 包装(3 跑,variance<0.1)+ judge bias 披露 + mock LLM 测试
+- [x] **Commit 4** — LLM-as-judge:`ChatModel` Protocol + `FactualCorrectnessJudge`(结构化 JSON 解析,容错 fence/prose,clamp,parse 失败降级)+ `SelfConsistentJudge`(3 跑,variance<阈值 才算可信)+ `AnthropicChatModel`(lazy import,`[llm]` extra)+ `JudgeMetric`(judge→metric 适配)+ 10 测试(mock);gate 全绿(34 tests)
 - [ ] **Commit 5** — runner + 架构 adapter:`RunResult` 归一化 + Wayfinder Supervisor adapter + ReAct baseline adapter(`create_react_agent` 同 5 MCP tools)+ token/cost 捕获 + mock 测试
 - [ ] **Commit 6** — 最小 CLI runner:`eval run --dataset <f> --arch <a> → CSV` + 配置加载 + 端到端(mock)测试
 
@@ -134,6 +134,13 @@ hard_deadline: 2026-10-15   # OSS v0.5 + 文章
 ## 📝 Daily Logs
 
 > 每个 commit / 每个工作日加一条,倒序(最新在最上)。
+
+### 2026-06-14 — Commit 4 — `LLM-as-judge + self-consistency`
+
+- **做了什么**:`judge.py` 加 `ChatModel` Protocol(text-in/out)、`FactualCorrectnessJudge`(用 expected_key_facts 做 ground truth,要求模型回 JSON,`_parse_verdict` 容错 ```json fence/prose + clamp [0,1] + parse 失败降级 score 0)、`SelfConsistentJudge`(N 跑取均值,pvariance<阈值 才标 consistent)、`AnthropicChatModel`(lazy import anthropic,`[llm]` extra)。`metric.py` 加 `JudgeMetric`(judge→Metric 适配,name=factual_correctness)。`tests/test_judge.py` 10 测试用 FakeChatModel/StubJudge。
+- **设计点**:judge 依赖注入 `ChatModel`,测试零网络;judge bias 显式 —— 每个 verdict 带 reasoning,self-consistency variance 超阈值即标不可信(对位"variance<0.1 才纳入报告")。
+- **Gate**:ruff/format/mypy --strict(5)/pytest(34 passed)。踩坑:① anthropic 是可选 extra,mypy strict 会因找不到模块报错 → pyproject 加 `[[tool.mypy.overrides]] ignore_missing_imports`;② ruff format 版本要和 CI 一致(0.15.17),用全局旧 ruff 格式化会和 CI 冲突 → 统一用 uv-synced ruff。
+- **下一步**:Commit 5 — runner + Wayfinder/ReAct adapter(mock 测试)。
 
 ### 2026-06-14 — Commit 3 — `deterministic metrics`
 

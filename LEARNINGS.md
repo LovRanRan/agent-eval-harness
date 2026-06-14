@@ -5,6 +5,30 @@
 
 ---
 
+## Commit 4 — LLM-as-judge + self-consistency (2026-06-14)
+
+### 🧠 Concepts internalized
+
+- An LLM-as-judge is only trustworthy if it's (a) structured — force JSON output with a fixed schema — and (b) self-consistent — run it N times and reject the score when variance is high. `SelfConsistentJudge` wraps any `Judge` and is itself a `Judge`, so composition is free.
+- The judge depends on a tiny `ChatModel` protocol (`complete(prompt) -> str`), not on the Anthropic SDK directly. That keeps the judge logic unit-testable with a fake and makes the LLM provider swappable.
+- Graceful degradation matters at eval scale: `_parse_verdict` tolerates markdown fences/prose (extract first `{` … last `}`), clamps the score to [0,1], and on unparseable output returns a score-0 verdict with the raw text in `raw` — one flaky judge call can't crash a 240-run sweep.
+- A judged metric is just an adapter: `JudgeMetric` turns a `Judge` into the `Metric` contract so factual_correctness sits alongside the deterministic metrics in one scoring loop.
+
+### ⚠️ Gotchas debugged
+
+- **Optional dep + mypy --strict**: a lazy `import anthropic` (only installed via the `[llm]` extra) makes strict mypy fail with "cannot find module" in CI. Fix: `[[tool.mypy.overrides]] module=["anthropic.*"], ignore_missing_imports=true`.
+- **ruff-format version skew**: formatting with a locally pip-installed ruff produced different wrapping than CI's uv-pinned ruff (0.15.17), so `ruff format --check` kept failing in CI even after I "formatted" it. Lesson: always format with the same ruff the gate uses — run it through `uv run` against the synced env, not a stray global ruff.
+
+### 💼 Interview soundbites
+
+- "My LLM judge is structured + self-consistent: it must return a fixed JSON schema, and I run it three times and drop the score if variance exceeds a threshold — so factual_correctness isn't one noisy model call."
+- "Judging degrades gracefully — unparseable judge output becomes a flagged score-0 verdict, never an exception, so one bad call can't sink a benchmark sweep."
+
+### 📚 Sources
+
+- Self-consistency (CoT-SC) — https://arxiv.org/abs/2203.11171
+- LLM-as-judge bias / MT-Bench — https://arxiv.org/abs/2306.05685
+
 ## Commit 3 — deterministic metrics (2026-06-14)
 
 ### 🧠 Concepts internalized

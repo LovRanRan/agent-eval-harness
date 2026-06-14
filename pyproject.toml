@@ -7,6 +7,10 @@ requires-python = ">=3.11"
 dependencies = []
 
 [project.optional-dependencies]
+# LLM-as-judge / live runs (kept out of core so the framework imports without it).
+llm = [
+  "anthropic>=0.39.0",
+]
 dev = [
   "mypy>=1.13.0",
   "pytest>=8.3.0",
@@ -31,6 +35,12 @@ select = ["E", "F", "I", "UP", "B", "SIM"]
 python_version = "3.11"
 strict = true
 mypy_path = "src"
+
+# The anthropic SDK is an optional extra (lazy-imported); don't fail strict mypy
+# when it isn't installed in the gate environment.
+[[tool.mypy.overrides]]
+module = ["anthropic.*"]
+ignore_missing_imports = true
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
