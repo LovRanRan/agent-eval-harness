@@ -18,6 +18,12 @@ llm = [
 live = [
   "httpx>=0.27.0",
 ]
+# ReAct single-agent baseline (LangGraph prebuilt + OpenAI + MCP tools).
+react = [
+  "langgraph>=0.2.60",
+  "langchain-openai>=0.2.0",
+  "langchain-mcp-adapters>=0.1.0",
+]
 dev = [
   "httpx>=0.27.0",
   "mypy>=1.13.0",
@@ -44,10 +50,15 @@ python_version = "3.11"
 strict = true
 mypy_path = "src"
 
-# The anthropic SDK is an optional extra (lazy-imported); don't fail strict mypy
-# when it isn't installed in the gate environment.
+# Optional extras (lazy-imported); don't fail strict mypy when they aren't
+# installed in the gate environment.
 [[tool.mypy.overrides]]
-module = ["anthropic.*"]
+module = [
+  "anthropic.*",
+  "langgraph.*",
+  "langchain_openai.*",
+  "langchain_mcp_adapters.*",
+]
 ignore_missing_imports = true
 
 [tool.pytest.ini_options]

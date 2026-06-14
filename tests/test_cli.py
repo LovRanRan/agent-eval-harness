@@ -54,9 +54,9 @@ def test_build_runner_wayfinder_wired_when_url_set(monkeypatch: pytest.MonkeyPat
     assert runner.arch == "wayfinder_supervisor"
 
 
-def test_build_runner_react_deferred() -> None:
-    with pytest.raises(NotImplementedError, match="ReAct"):
-        build_runner("react_baseline")
+def test_build_runner_wires_react_baseline() -> None:
+    runner = build_runner("react_baseline")
+    assert runner.arch == "react_baseline"
 
 
 def test_build_runner_rejects_unknown_arch() -> None:

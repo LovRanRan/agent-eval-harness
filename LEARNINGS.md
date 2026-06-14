@@ -28,6 +28,30 @@
 
 - pytest node IDs — https://docs.pytest.org/en/stable/how-to/usage.html#specifying-which-tests-to-run
 
+## ReAct baseline + wayfinder verifier autonomy (2026-06-14)
+
+### 🧠 Concepts internalized
+
+- A fair baseline reuses the *same tools* as the system under test, minus the structure being measured: the ReAct arm loads the identical project5 MCP tools but runs them through a single `create_react_agent` — so any gap vs the Supervisor is attributable to orchestration, not tooling.
+- `langchain-mcp-adapters` `MultiServerMCPClient.get_tools()` turns running MCP servers (streamable-http) directly into LangChain tools — the same client the production system uses, so the baseline talks to the exact same tool surface.
+- The architectural contrast shows up as data: the ReAct arm emits no structured claims (`claims=[]`), so its verification_rate is ~0 by construction — that's the measurable point of "embedded verification."
+- Making a metric real sometimes means fixing the *system under test*, not the harness: verification_rate stayed 0 until wayfinder's verifier learned to discover a relevant test from a claim's word-stems (autonomous claim→test mapping) and run it in the sandbox.
+
+### ⚠️ Gotchas debugged
+
+- Lazy-imported optional deps (`langgraph`, `langchain_openai`, `langchain_mcp_adapters`) trip strict mypy with "cannot find module" in the gate env → add them to the `[[tool.mypy.overrides]] ignore_missing_imports` list alongside `anthropic`.
+- Stopword lists for keyword matching are easy to over-prune: I initially filtered `returns`/`value`/`header`, which are exactly the domain words a behavioural claim shares with its test name — removing them fixed autonomous test discovery.
+
+### 💼 Interview soundbites
+
+- "The ReAct baseline is genuinely fair — same five MCP tools via the same adapter, just no supervisor and no verifier — so the benchmark isolates the value of orchestration + verification."
+- "To make verification_rate measurable I had to extend the agent itself: its verifier now maps a behavioural claim to a repo test by name-stem matching and runs it in a sandbox, instead of only honoring tests spelled out verbatim."
+
+### 📚 Sources
+
+- LangGraph prebuilt `create_react_agent` — https://langchain-ai.github.io/langgraph/reference/prebuilt/
+- langchain-mcp-adapters — https://github.com/langchain-ai/langchain-mcp-adapters
+
 ## Commit 8 (live wiring) — wayfinder live adapter (2026-06-14)
 
 ### 🧠 Concepts internalized

@@ -70,8 +70,8 @@ hard_deadline: 2026-10-15   # OSS v0.5 + 文章
 | ---------------------- | ---------------------------------------------------------- |
 | 当前阶段               | **Building — Phase 1 完成**(最小可跑框架 C1–C6 全绿);下一步 = Phase 2 数据集策划/真跑(需 API key + wayfinder) |
 | 进度                   | 0 / N acceptance criteria done(脚手架不计 acceptance）     |
-| 完成 commits           | 0.a · 0.b · CI fix · C1–C6(Phase 1)· C8 live adapter · **C7 dataset small_v1(12 tasks)** |
-| Gate 状态              | ✅ ruff / ruff-format / mypy --strict(9 files)/ pytest(52 passed);CI uv-native(`uv sync`+`uv run`) |
+| 完成 commits           | 0.a · 0.b · CI fix · C1–C7 · C8 wayfinder live · **ReAct baseline + wayfinder verifier-B(verification_rate 打通)** |
+| Gate 状态              | ✅ ruff / ruff-format / mypy --strict(11 files)/ pytest(56 passed);CI uv-native(`uv sync`+`uv run`) |
 | 🔑 资源状态            | Anthropic key ✅(judge)· OpenAI key ✅(gpt-5.5 可用)· Docker ✅(v29.4.3 daemon up)· wayfinder+project5 ✅ —— **真跑前置全齐** |
 | 软截止                 | 2026-09-15                                                 |
 | 硬截止                 | 2026-10-15                                                 |
@@ -135,6 +135,13 @@ hard_deadline: 2026-10-15   # OSS v0.5 + 文章
 ## 📝 Daily Logs
 
 > 每个 commit / 每个工作日加一条,倒序(最新在最上)。
+
+### 2026-06-14 — ReAct baseline(对照组代码完成)
+
+- **做了什么**:`live/react.py` —— ReAct 单 agent 对照组。`react_invoke(mcp_urls, model=gpt-5.5)` 返回 `AgentInvoke`:shallow clone repo → 用 `MultiServerMCPClient`(streamable_http)加载 project5 MCP 工具 → `create_react_agent(ChatOpenAI)` → `ainvoke` → 映射成标准 raw dict。纯函数 `_extract_answer_and_tokens`(取最后 AI 消息 + 累加 token)、`_map_react_result`(route="react"、claims=[] —— ReAct 无结构化 verifier,verification_rate 天然低,正是对比点)、`_slug`。`[react]` extra(langgraph + langchain-openai + langchain-mcp-adapters,懒加载)。`cli.build_runner` 接好 react_baseline(env `REACT_*_MCP_URL` / `REACT_OPENAI_MODEL`)。
+- **测试**:`tests/test_live_react.py` 5 个纯映射单测;改 `test_cli` 的 react 用例为"已接线"。gate 全绿(ruff/format/mypy/**56 tests**)。mypy 给 react 三个懒加载依赖加了 ignore_missing_imports override。
+- **待 live 验证**:真跑需 `[react]` extra 装上 + mcp-test-runner 也起 HTTP(8103,给 ReAct run_pytest 工具)+ OPENAI_API_KEY。
+- **下一步**:routing/citation/cost 三个 metric 来源 → 全量跑 12×3×2 → 4 图 + EVAL_REPORT。
 
 ### 2026-06-14 — verification_rate 调查:被 wayfinder verifier 触发卡住(重要)
 

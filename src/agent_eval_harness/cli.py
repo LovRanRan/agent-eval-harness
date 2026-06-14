@@ -17,7 +17,11 @@ from pathlib import Path
 from agent_eval_harness.datasets import load_tasks
 from agent_eval_harness.evaluate import evaluate, write_csv
 from agent_eval_harness.metric import Metric, RoutingAccuracy, VerificationRate
-from agent_eval_harness.runner import Runner, WayfinderSupervisorRunner
+from agent_eval_harness.runner import (
+    ReActBaselineRunner,
+    Runner,
+    WayfinderSupervisorRunner,
+)
 
 ARCHITECTURES = ("wayfinder_supervisor", "react_baseline")
 
@@ -54,9 +58,15 @@ def build_runner(arch: str) -> Runner:
         return WayfinderSupervisorRunner(
             wayfinder_invoke(base_url, auth_token=os.environ.get("WAYFINDER_TOKEN"))
         )
-    raise NotImplementedError(
-        "ReAct baseline live wiring is a follow-up; inject a runner_factory to run offline"
-    )
+    mcp_urls = {
+        "repo_mapper": os.environ.get("REACT_REPO_MAPPER_MCP_URL", "http://127.0.0.1:8101/mcp"),
+        "ast_explorer": os.environ.get("REACT_AST_EXPLORER_MCP_URL", "http://127.0.0.1:8102/mcp"),
+        "test_runner": os.environ.get("REACT_TEST_RUNNER_MCP_URL", "http://127.0.0.1:8103/mcp"),
+    }
+    from agent_eval_harness.live.react import react_invoke
+
+    model = os.environ.get("REACT_OPENAI_MODEL", "gpt-5.5")
+    return ReActBaselineRunner(react_invoke(mcp_urls, model=model))
 
 
 def run_eval(
