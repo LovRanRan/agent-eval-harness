@@ -30,6 +30,13 @@ def test_map_run_summary_builds_claims_from_counts() -> None:
     assert labels.count("contradicted") == 1
 
 
+def test_map_run_summary_prefers_top_level_intent_for_route() -> None:
+    raw = map_run_summary(
+        {"final_output": "x", "intent": "debug", "trace_metadata": {"intent": "architectural"}}
+    )
+    assert raw["route"] == "debug"
+
+
 def test_map_run_summary_tolerates_missing_fields() -> None:
     raw = map_run_summary({})
     assert raw["answer"] == ""

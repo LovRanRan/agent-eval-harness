@@ -38,7 +38,9 @@ def map_run_summary(summary: Mapping[str, Any]) -> dict[str, Any]:
     )
     meta = summary.get("trace_metadata")
     meta = meta if isinstance(meta, dict) else {}
-    route = str(meta.get("intent") or meta.get("route") or "")
+    # Prefer the top-level classified intent (wayfinder now surfaces it); fall back
+    # to trace_metadata for older runs.
+    route = str(summary.get("intent") or meta.get("intent") or meta.get("route") or "")
     return {
         "answer": summary.get("final_output") or "",
         "route": route,
