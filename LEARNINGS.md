@@ -5,6 +5,28 @@
 
 ---
 
+## Commit 5 — runner + architecture adapters (2026-06-14)
+
+### 🧠 Concepts internalized
+
+- The fairness of a Supervisor-vs-ReAct comparison is enforced in one function: `_normalize` maps each architecture's raw output into the same `RunResult`, so the difference between architectures shows up as *data* (ReAct yields no claims → low verification_rate) rather than as special-casing in the scorer.
+- Adapters take an injected `AgentInvoke = Callable[[repo, query], Mapping]`. The harness never imports Wayfinder or LangGraph — it only depends on a callable — so the framework stays importable, testable, and decoupled from the systems it grades.
+- `_execute` times the call and converts any exception into `RunResult.error`. Errors-as-data is the difference between "one task failed" and "the whole 240-run sweep aborted".
+- Defensive normalization of untrusted agent output: coerce unknown claim labels/risk to safe defaults, skip non-dict claim entries, and default malformed numeric fields to 0 — a noisy agent can't produce a `RunResult` that crashes a metric.
+
+### ⚠️ Gotchas debugged
+
+- Narrowing `Any` from a raw dict into a `Literal` (ClaimLabel/RiskLevel): because `item.get(...)` is `Any`, assigning the membership-checked value to a `Literal`-typed variable type-checks without a `cast` — the `Any` branch dominates the conditional's type. (Had this needed a non-Any source, a `cast` would be required.)
+
+### 💼 Interview soundbites
+
+- "Architecture-blindness is structural: each adapter normalizes into one `RunResult`, so when ReAct scores lower on verification_rate it's because it genuinely produced no grounded claims, not because I scored it differently."
+- "The harness depends on an injected `(repo, query) -> result` callable, never on the agent frameworks themselves, so it's decoupled from — and can grade — any of them."
+
+### 📚 Sources
+
+- `time.perf_counter` for latency — https://docs.python.org/3/library/time.html#time.perf_counter
+
 ## Commit 4 — LLM-as-judge + self-consistency (2026-06-14)
 
 ### 🧠 Concepts internalized

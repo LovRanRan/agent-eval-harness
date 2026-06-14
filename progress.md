@@ -70,8 +70,8 @@ hard_deadline: 2026-10-15   # OSS v0.5 + 文章
 | ---------------------- | ---------------------------------------------------------- |
 | 当前阶段               | **Building**(脚手架 + CI 就绪;下一步 = Commit 1 eval API design note,Haichuan 主导) |
 | 进度                   | 0 / N acceptance criteria done(脚手架不计 acceptance）     |
-| 完成 commits           | 0.a · 0.b · CI fix · C1 · C2 · C3 · **C4 LLM-judge + self-consistency** |
-| Gate 状态              | ✅ ruff / ruff-format / mypy --strict(5 files)/ pytest(34 passed);CI uv-native(`uv sync`+`uv run`) |
+| 完成 commits           | 0.a · 0.b · CI fix · C1–C4 · **C5 runner + adapters** |
+| Gate 状态              | ✅ ruff / ruff-format / mypy --strict(5 files)/ pytest(39 passed);CI uv-native(`uv sync`+`uv run`) |
 | 软截止                 | 2026-09-15                                                 |
 | 硬截止                 | 2026-10-15                                                 |
 | **Today's North Star** | ⬜ 待你手填(建议:写 Commit 1 eval-API design note —— datasets/runner/metric/judge schema) |
@@ -98,7 +98,7 @@ hard_deadline: 2026-10-15   # OSS v0.5 + 文章
 - [x] **Commit 2** — datasets 层:`load_tasks`(JSONL,跳空行/注释,报行号)+ `validate_task`(按桶校验:≥3 facts / claim_verification 需 claim / bug_localization 需 fix files)+ `DatasetError` + fixture `mini_tasks.jsonl`(4 桶各 1)+ 10 个测试;gate 全绿(18 tests)
 - [x] **Commit 3** — 确定性 metrics:`RoutingAccuracy` / `CitationGrounding`(注入 `SymbolResolver`,生产接 mcp-ast-explorer)/ `VerificationRate`(verified+contradicted 占比)实现 + 7 测试;gate 全绿(25 tests)
 - [x] **Commit 4** — LLM-as-judge:`ChatModel` Protocol + `FactualCorrectnessJudge`(结构化 JSON 解析,容错 fence/prose,clamp,parse 失败降级)+ `SelfConsistentJudge`(3 跑,variance<阈值 才算可信)+ `AnthropicChatModel`(lazy import,`[llm]` extra)+ `JudgeMetric`(judge→metric 适配)+ 10 测试(mock);gate 全绿(34 tests)
-- [ ] **Commit 5** — runner + 架构 adapter:`RunResult` 归一化 + Wayfinder Supervisor adapter + ReAct baseline adapter(`create_react_agent` 同 5 MCP tools)+ token/cost 捕获 + mock 测试
+- [x] **Commit 5** — runner + 架构 adapter:`_execute`(计时 + 错误转 `RunResult.error` 不抛)+ `_normalize`/`_parse_claims`(安全默认、非法 label/risk 降级)+ `WayfinderSupervisorRunner` + `ReActBaselineRunner`(注入式 `AgentInvoke`,live 接线留 Commit 8)+ 6 mock 测试;gate 全绿(39 tests)
 - [ ] **Commit 6** — 最小 CLI runner:`eval run --dataset <f> --arch <a> → CSV` + 配置加载 + 端到端(mock)测试
 
 ### Build — Phase 2：小规模 eval（尽早拿数字喂简历）
@@ -134,6 +134,13 @@ hard_deadline: 2026-10-15   # OSS v0.5 + 文章
 ## 📝 Daily Logs
 
 > 每个 commit / 每个工作日加一条,倒序(最新在最上)。
+
+### 2026-06-14 — Commit 5 — `runner + architecture adapters`
+
+- **做了什么**:`runner.py` 加 `AgentInvoke` 类型((repo,query)→raw mapping)、`_execute`(计时 + 捕获异常转 `RunResult.error`,单 task 失败不炸全局)、`_normalize` + `_parse_claims`(从 raw 解析 claim,非法 label/risk 降级 unverified/low,非 dict 跳过,数值字段类型不对则 0)、`WayfinderSupervisorRunner`(arch=wayfinder_supervisor,有 route/claims/citations)、`ReActBaselineRunner`(arch=react_baseline,通常无 claims → verification_rate 天然低)。`tests/test_runner.py` 6 测试。
+- **设计点**:adapter 依赖注入 `AgentInvoke`,真实接线(HTTP 到部署的 wayfinder / LangGraph create_react_agent)留 Commit 8 live run;Commit 5 只做归一化 + 容错,mock 可测。两个 arch 共享 `_normalize`,差异在各自 invoke 产出。
+- **Gate**:ruff/format/mypy --strict(5)/pytest(39 passed)全绿。
+- **下一步**:Commit 6 — CLI runner(dataset × arch → CSV)。
 
 ### 2026-06-14 — Commit 4 — `LLM-as-judge + self-consistency`
 

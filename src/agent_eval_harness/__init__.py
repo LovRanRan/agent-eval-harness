@@ -37,17 +37,21 @@ from agent_eval_harness.metric import (
     VerificationRate,
 )
 from agent_eval_harness.runner import (
+    AgentInvoke,
     Claim,
     ClaimLabel,
+    ReActBaselineRunner,
     RiskLevel,
     Runner,
     RunResult,
+    WayfinderSupervisorRunner,
 )
 
 __version__ = "0.0.1"
 
 __all__ = [
     "BUCKETS",
+    "AgentInvoke",
     "AnthropicChatModel",
     "Bucket",
     "ChatModel",
@@ -62,6 +66,7 @@ __all__ = [
     "JudgeVerdict",
     "Metric",
     "MetricScore",
+    "ReActBaselineRunner",
     "RiskLevel",
     "RoutingAccuracy",
     "RunResult",
@@ -70,6 +75,7 @@ __all__ = [
     "SymbolResolver",
     "Task",
     "VerificationRate",
+    "WayfinderSupervisorRunner",
     "__version__",
     "load_tasks",
     "validate_task",
