@@ -70,9 +70,9 @@ hard_deadline: 2026-10-15   # OSS v0.5 + 文章
 | ---------------------- | ---------------------------------------------------------- |
 | 当前阶段               | **Building — Phase 1 完成**(最小可跑框架 C1–C6 全绿);下一步 = Phase 2 数据集策划/真跑(需 API key + wayfinder) |
 | 进度                   | 0 / N acceptance criteria done(脚手架不计 acceptance）     |
-| 完成 commits           | 0.a · 0.b · CI fix · C1–C6(Phase 1)· **C8 wayfinder live adapter(代码)** |
+| 完成 commits           | 0.a · 0.b · CI fix · C1–C6(Phase 1)· C8 live adapter · **C7 dataset small_v1(12 tasks)** |
 | Gate 状态              | ✅ ruff / ruff-format / mypy --strict(9 files)/ pytest(52 passed);CI uv-native(`uv sync`+`uv run`) |
-| 🔑 资源状态            | Anthropic key ✅(judge,`.env` gitignored,已验证 HTTP 200)· OpenAI key ⬜(wayfinder 需)· Docker ⬜(起栈需) |
+| 🔑 资源状态            | Anthropic key ✅(judge)· OpenAI key ✅(gpt-5.5 可用)· Docker ✅(v29.4.3 daemon up)· wayfinder+project5 ✅ —— **真跑前置全齐** |
 | 软截止                 | 2026-09-15                                                 |
 | 硬截止                 | 2026-10-15                                                 |
 | **Today's North Star** | ⬜ 待你手填(建议:写 Commit 1 eval-API design note —— datasets/runner/metric/judge schema) |
@@ -104,7 +104,7 @@ hard_deadline: 2026-10-15   # OSS v0.5 + 文章
 
 ### Build — Phase 2：小规模 eval（尽早拿数字喂简历）
 
-- [ ] **Commit 7** — 策划 10–15 repo 数据集(4 桶,每个 repo ≥1 可跑 pytest/jest,smoke 筛掉破损套件)+ 标注 ground truth(query / ≥3 key facts / expected route / verifier test_id / bug-fix files)
+- [x] **Commit 7** — 数据集 `datasets/small_v1.jsonl`(12 任务,4 桶各 3,5 个有 pytest 的 Python repo:click/flask/requests/httpx/rich)。GT 对着 pin 的真仓库读源码/测试核过(verifier_test_id 是真 nodeid、bug_fix_files 真存在)。`load_tasks` 校验通过(4 桶各 3,invariants OK)。**待你 truthfulness review** 后才出数字
 - [/] **Commit 8** — live wiring + 🚀 跑小规模 eval。**已做(代码)**:`live/wayfinder.py`(`map_run_summary` + `wayfinder_invoke`:POST /explain → 轮询 /status → 映射 RunSummary;`[live]` extra httpx;httpx.MockTransport 测全链路)+ `cli.build_runner` 接 `WAYFINDER_URL`。Anthropic key 已验证(judge 用)。**待你资源才能真跑**:OpenAI key(wayfinder 跑在 gpt-5.5)+ Docker 起 6 服务栈(含 sandbox-worker 才有真 verification_rate)+ ReAct baseline 接线(需 live 迭代)+ 数据集 GT(你审)。gate 全绿(52 tests)
 
 ### Build — Phase 3：完整 40-repo benchmark + 报告
@@ -135,6 +135,13 @@ hard_deadline: 2026-10-15   # OSS v0.5 + 文章
 ## 📝 Daily Logs
 
 > 每个 commit / 每个工作日加一条,倒序(最新在最上)。
+
+### 2026-06-14 — Commit 7 — `dataset small_v1 (12 tasks)`
+
+- **做了什么**:`datasets/small_v1.jsonl` 12 任务(architecture/function_tracing/claim_verification/bug_localization 各 3)+ `datasets/README.md`。在 sandbox clone 了 click/flask/requests/httpx/rich(都有 pytest),pin 到 HEAD SHA,**对着真源码/测试核 GT**:flask `dispatch_request`(app.py:966,被 full_dispatch_request 调)、requests `rebuild_auth`(sessions.py:309,被 resolve_redirects 调,跨 host 删 Authorization)、3 个 claim 绑真 nodeid(`tests/test_requests.py::TestRequests::test_auth_is_stripped_on_http_downgrade` / `..._fragment_maintained_on_redirect` / `..._cookie_sent_on_redirect`)、bug_fix_files 用确认存在的 src/ 路径。`expected_route` 用 wayfinder intent(architectural/behavioral/debug)。
+- **校验**:`load_tasks` 加载通过,4 桶各 3,per-bucket invariants OK。
+- **待你**:truthfulness review(尤其 3 个 claim 的 expected verdict + bug 的 suspect 模块),过了才出数字。
+- **资源**:全前置已齐(2 key + Docker + wayfinder)。下一步:配 wayfinder .env(OpenAI + 真 verifier + GitHub ingestion allowlist 加这 5 repo)+ `docker compose up` 起栈 → 接 ReAct baseline → 跑。
 
 ### 2026-06-14 — Commit 8(代码)— `wayfinder live invoke adapter`
 

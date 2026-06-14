@@ -5,6 +5,29 @@
 
 ---
 
+## Commit 7 — dataset small_v1 (2026-06-14)
+
+### 🧠 Concepts internalized
+
+- A benchmark is only as trustworthy as its ground truth. Authoring it by cloning each repo at a pinned SHA and reading the actual source/tests — rather than from memory — is the difference between a defensible number and a fabricated one. Every `verifier_test_id` here is a real pytest node ID confirmed in the pinned tree.
+- Pin everything: `repo_pin` = the exact commit inspected, so the eval is reproducible and the ground truth can't silently drift when upstream changes.
+- The dataset's `expected_route` must speak the *system-under-test's* vocabulary (Wayfinder's `architectural`/`behavioral`/`debug` intents), not the harness's bucket names — otherwise routing_accuracy compares apples to oranges.
+- Mix verdicts deliberately in claim_verification (2 contradicted + 1 verified) so the benchmark tests whether the verifier catches *false* claims, not just confirms true ones.
+
+### ⚠️ Gotchas debugged
+
+- pytest node IDs need the class qualifier: the requests tests live in `class TestRequests`, so the ID is `tests/test_requests.py::TestRequests::test_...`, not `tests/test_requests.py::test_...`. Confirmed the enclosing class by checking the last `class` before each test's line number.
+- Modern packages use a `src/` layout — requests/flask/click are `src/<pkg>/...`, so `bug_fix_files` paths had to be `src/requests/sessions.py` etc., verified to exist rather than guessed.
+
+### 💼 Interview soundbites
+
+- "Every ground-truth label in the benchmark was authored against the repo at a pinned commit — real pytest node IDs, real file paths — so the eval numbers are reproducible and defensible, not vibes."
+- "I deliberately seeded false claims into the claim-verification set so the benchmark measures whether the verifier catches hallucinations, not just whether it agrees with true statements."
+
+### 📚 Sources
+
+- pytest node IDs — https://docs.pytest.org/en/stable/how-to/usage.html#specifying-which-tests-to-run
+
 ## Commit 8 (live wiring) — wayfinder live adapter (2026-06-14)
 
 ### 🧠 Concepts internalized
