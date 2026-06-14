@@ -5,6 +5,29 @@
 
 ---
 
+## Commit 6 — CLI runner (2026-06-14)
+
+### 🧠 Concepts internalized
+
+- The eval loop is tiny once the contracts are right: `evaluate` = for each task, run the architecture, then score the result with each metric — skipping scoring when the run errored (an errored run has no answer to grade).
+- CSV is the right artifact boundary between "run the eval" and "make charts/report": one metric per column, computed as the union of metric names across rows, with missing metrics left blank. The report code (later) just reads CSV.
+- Testability via injection again: `run_eval` accepts a `runner_factory`, so the whole load→run→score→write pipeline runs end-to-end in a unit test with a fake runner — no live agent, no API key.
+- A `[project.scripts]` entry point (`agent-eval = "...cli:main"`) makes the tool a real console command after `pip install`, and `main(argv)` returning an `int` is the clean, testable CLI shape.
+
+### ⚠️ Gotchas debugged
+
+- Long lines sneak into *test* files (big dataclass constructions); ruff lints tests too (`ruff check .`), so they must wrap. Running the CI-pinned ruff format over the test files fixes both the E501 and the format check at once.
+
+### 💼 Interview soundbites
+
+- "The runner pipeline is fully testable offline — `run_eval` takes an injectable runner factory, so I can exercise load→run→score→CSV end-to-end without spending a token, and only swap in the live agent for real runs."
+- "Phase 1 is a complete, gated framework: datasets, runner adapters, four metrics, an LLM judge with self-consistency, and a CLI — all under ruff + mypy --strict + pytest before a single real eval is run."
+
+### 📚 Sources
+
+- argparse subcommands — https://docs.python.org/3/library/argparse.html#sub-commands
+- Python packaging entry points — https://packaging.python.org/en/latest/specifications/entry-points/
+
 ## Commit 5 — runner + architecture adapters (2026-06-14)
 
 ### 🧠 Concepts internalized

@@ -68,10 +68,10 @@ hard_deadline: 2026-10-15   # OSS v0.5 + 文章
 
 |                        |                                                            |
 | ---------------------- | ---------------------------------------------------------- |
-| 当前阶段               | **Building**(脚手架 + CI 就绪;下一步 = Commit 1 eval API design note,Haichuan 主导) |
+| 当前阶段               | **Building — Phase 1 完成**(最小可跑框架 C1–C6 全绿);下一步 = Phase 2 数据集策划/真跑(需 API key + wayfinder) |
 | 进度                   | 0 / N acceptance criteria done(脚手架不计 acceptance）     |
-| 完成 commits           | 0.a · 0.b · CI fix · C1–C4 · **C5 runner + adapters** |
-| Gate 状态              | ✅ ruff / ruff-format / mypy --strict(5 files)/ pytest(39 passed);CI uv-native(`uv sync`+`uv run`) |
+| 完成 commits           | 0.a · 0.b · CI fix · C1–C5 · **C6 CLI runner**(Phase 1 最小框架完成) |
+| Gate 状态              | ✅ ruff / ruff-format / mypy --strict(7 files)/ pytest(46 passed);CI uv-native(`uv sync`+`uv run`) |
 | 软截止                 | 2026-09-15                                                 |
 | 硬截止                 | 2026-10-15                                                 |
 | **Today's North Star** | ⬜ 待你手填(建议:写 Commit 1 eval-API design note —— datasets/runner/metric/judge schema) |
@@ -99,7 +99,7 @@ hard_deadline: 2026-10-15   # OSS v0.5 + 文章
 - [x] **Commit 3** — 确定性 metrics:`RoutingAccuracy` / `CitationGrounding`(注入 `SymbolResolver`,生产接 mcp-ast-explorer)/ `VerificationRate`(verified+contradicted 占比)实现 + 7 测试;gate 全绿(25 tests)
 - [x] **Commit 4** — LLM-as-judge:`ChatModel` Protocol + `FactualCorrectnessJudge`(结构化 JSON 解析,容错 fence/prose,clamp,parse 失败降级)+ `SelfConsistentJudge`(3 跑,variance<阈值 才算可信)+ `AnthropicChatModel`(lazy import,`[llm]` extra)+ `JudgeMetric`(judge→metric 适配)+ 10 测试(mock);gate 全绿(34 tests)
 - [x] **Commit 5** — runner + 架构 adapter:`_execute`(计时 + 错误转 `RunResult.error` 不抛)+ `_normalize`/`_parse_claims`(安全默认、非法 label/risk 降级)+ `WayfinderSupervisorRunner` + `ReActBaselineRunner`(注入式 `AgentInvoke`,live 接线留 Commit 8)+ 6 mock 测试;gate 全绿(39 tests)
-- [ ] **Commit 6** — 最小 CLI runner:`eval run --dataset <f> --arch <a> → CSV` + 配置加载 + 端到端(mock)测试
+- [x] **Commit 6** — CLI runner:`evaluate()` 编排(逐 task 跑 + 评分,error 跳过评分)+ `write_csv`(每 metric 一列)+ `agent-eval run --dataset --arch --out` 入口点(`build_runner` live 接线留 C8,`run_eval` 可注入 runner_factory 离线测)+ README 用法 + 7 测试;gate 全绿(46 tests)
 
 ### Build — Phase 2：小规模 eval（尽早拿数字喂简历）
 
@@ -134,6 +134,13 @@ hard_deadline: 2026-10-15   # OSS v0.5 + 文章
 ## 📝 Daily Logs
 
 > 每个 commit / 每个工作日加一条,倒序(最新在最上)。
+
+### 2026-06-14 — Commit 6 — `CLI runner`(Phase 1 完成)
+
+- **做了什么**:`evaluate.py`(`EvalRow` + `evaluate(tasks, runner, metrics)` 逐 task 跑+评分、error 跳过评分;`write_csv` 每 metric 一列、缺失留空)。`cli.py`(`agent-eval run --dataset --arch --out`,argparse 子命令;`default_metrics` = routing+verification 离线安全;`build_runner` live 接线留 C8 raise NotImplementedError;`run_eval` 可注入 `runner_factory` 离线端到端测)。pyproject 加 `[project.scripts] agent-eval`。README 加用法。`tests/test_evaluate.py` + `tests/test_cli.py` 7 测试。
+- **里程碑**:**Phase 1(最小可跑框架)完成** —— datasets→runner→metric/judge→CLI 全链路打通,46 测试全绿,`agent-eval --help` 入口点可用。剩下是接真实 wayfinder/ReAct + 数据集策划(Phase 2,需 API key)。
+- **Gate**:ruff/format/mypy --strict(7)/pytest(46 passed)。踩坑:测试里长行 E501 + ruff format 要用 CI 同版(0.15.17)统一。
+- **下一步(需你的资源)**:Phase 2 Commit 7 数据集策划(clone 真 repo + 跑测试套件验证)+ Commit 8 真跑(Anthropic API key + wayfinder + 3 MCP 起服务)。这两步我无法独立端到端完成,到此交接。
 
 ### 2026-06-14 — Commit 5 — `runner + architecture adapters`
 

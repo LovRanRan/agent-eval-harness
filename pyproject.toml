@@ -6,6 +6,9 @@ readme = "README.md"
 requires-python = ">=3.11"
 dependencies = []
 
+[project.scripts]
+agent-eval = "agent_eval_harness.cli:main"
+
 [project.optional-dependencies]
 # LLM-as-judge / live runs (kept out of core so the framework imports without it).
 llm = [

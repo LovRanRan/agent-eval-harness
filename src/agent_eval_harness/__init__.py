@@ -19,6 +19,7 @@ from agent_eval_harness.datasets import (
     load_tasks,
     validate_task,
 )
+from agent_eval_harness.evaluate import EvalRow, evaluate, write_csv
 from agent_eval_harness.judge import (
     AnthropicChatModel,
     ChatModel,
@@ -60,6 +61,7 @@ __all__ = [
     "ClaimLabel",
     "Dataset",
     "DatasetError",
+    "EvalRow",
     "FactualCorrectnessJudge",
     "Judge",
     "JudgeMetric",
@@ -77,6 +79,8 @@ __all__ = [
     "VerificationRate",
     "WayfinderSupervisorRunner",
     "__version__",
+    "evaluate",
     "load_tasks",
     "validate_task",
+    "write_csv",
 ]
