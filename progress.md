@@ -70,8 +70,8 @@ hard_deadline: 2026-10-15   # OSS v0.5 + 文章
 | ---------------------- | ---------------------------------------------------------- |
 | 当前阶段               | **Building**(脚手架 + CI 就绪;下一步 = Commit 1 eval API design note,Haichuan 主导) |
 | 进度                   | 0 / N acceptance criteria done(脚手架不计 acceptance）     |
-| 完成 commits           | 0.a · 0.b · CI fix · **Commit 1(core eval API skeleton)** |
-| Gate 状态              | ✅ ruff / ruff-format / mypy --strict(5 files)/ pytest(9 passed);CI uv-native(`uv sync`+`uv run`) |
+| 完成 commits           | 0.a · 0.b · CI fix · C1 skeleton · **C2 datasets layer** |
+| Gate 状态              | ✅ ruff / ruff-format / mypy --strict(5 files)/ pytest(18 passed);CI uv-native(`uv sync`+`uv run`) |
 | 软截止                 | 2026-09-15                                                 |
 | 硬截止                 | 2026-10-15                                                 |
 | **Today's North Star** | ⬜ 待你手填(建议:写 Commit 1 eval-API design note —— datasets/runner/metric/judge schema) |
@@ -95,7 +95,7 @@ hard_deadline: 2026-10-15   # OSS v0.5 + 文章
 - [x] **Commit 0.a** — repo init + scope doc + README 概要(已 push `8206a48`)
 - [x] **Commit 0.b** — uv / ruff / mypy / pytest 脚手架 + CI(已 push;CI 首跑撞 PEP 668 `--system`,改 `uv sync`+`uv run` 修好 `4de3404`;remote = `9d8dd11`,gate 全绿)
 - [x] **Commit 1** — core eval API 骨架:`DESIGN.md` 5 项决策定稿 + `datasets`/`runner`/`metric`/`judge` 四模块(`Task`/`RunResult`/`Claim`/`MetricScore`/`JudgeVerdict` frozen dataclass + `Runner`/`Metric`/`Judge` Protocol),纯类型契约无逻辑;ruff/format/mypy --strict(5 files)/pytest(9)全绿
-- [ ] **Commit 2** — datasets 层:`Task` 实现 + JSONL 加载/校验 + 一个 fixture 数据集(2–3 条覆盖 4 桶)+ 加载/校验测试
+- [x] **Commit 2** — datasets 层:`load_tasks`(JSONL,跳空行/注释,报行号)+ `validate_task`(按桶校验:≥3 facts / claim_verification 需 claim / bug_localization 需 fix files)+ `DatasetError` + fixture `mini_tasks.jsonl`(4 桶各 1)+ 10 个测试;gate 全绿(18 tests)
 - [ ] **Commit 3** — 确定性 metrics:`routing_accuracy` / `citation_grounding`(AST 反查)/ `verification_rate`(从 claim 标签算)实现 + 单测(用 fixture RunResult)
 - [ ] **Commit 4** — LLM-as-judge:`factual_correctness` judge(Claude 结构化输出)+ self-consistency 包装(3 跑,variance<0.1)+ judge bias 披露 + mock LLM 测试
 - [ ] **Commit 5** — runner + 架构 adapter:`RunResult` 归一化 + Wayfinder Supervisor adapter + ReAct baseline adapter(`create_react_agent` 同 5 MCP tools)+ token/cost 捕获 + mock 测试
@@ -134,6 +134,12 @@ hard_deadline: 2026-10-15   # OSS v0.5 + 文章
 ## 📝 Daily Logs
 
 > 每个 commit / 每个工作日加一条,倒序(最新在最上)。
+
+### 2026-06-14 — Commit 2 — `datasets layer`
+
+- **做了什么**:`datasets.py` 落 `load_tasks`(JSONL 逐行解析、跳空行/`#` 注释、JSON 错误带 `file:line`、去重 id)+ `validate_task`(共享规则 ≥3 key facts + 按桶:claim_verification 需 `claim_under_test`、bug_localization 需 `bug_fix_files`)+ `DatasetError` + 类型安全的 `_task_from_dict` 字段校验。fixture `tests/fixtures/mini_tasks.jsonl`(4 桶各 1 条)。`tests/test_datasets.py` 10 个测试(加载/跳过/行号/去重/缺字段/类型错/按桶校验)。
+- **Gate**:ruff/format/mypy --strict(5 files)/pytest(18 passed)全绿。修了 2 处:mypy `redundant-cast`(membership 检查后 mypy 已把 bucket 收窄到 Literal,去掉 cast)、删掉 Commit 1 占位测试(`load_tasks` 已实现)。
+- **下一步**:Commit 3 — 确定性 metrics(routing_accuracy / citation_grounding / verification_rate)。
 
 ### 2026-06-14 — Commit 1 — `core eval API skeleton`
 

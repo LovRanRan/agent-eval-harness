@@ -5,6 +5,28 @@
 
 ---
 
+## Commit 2 — datasets layer (2026-06-14)
+
+### 🧠 Concepts internalized
+
+- A JSONL loader for an eval set needs three things beyond `json.loads`: skip blank/comment lines, report errors with `file:line` so a bad dataset is debuggable, and enforce uniqueness of task ids (a duplicate id silently double-counts in metrics).
+- Validation splits into shared rules (≥3 key facts for every task) and bucket-specific rules (claim_verification needs a claim; bug_localization needs fix files). Keeping `validate_task` separate from `load_tasks` means it can also guard hand-authored `Task` objects in tests.
+- Type-checking untrusted JSON: `json.loads` returns `Any`, so each field goes through a typed helper (`_req_str`, `_as_str_list`, ...) that raises `DatasetError` on a type mismatch — the dataclass then only ever sees correctly-typed values.
+
+### ⚠️ Gotchas debugged
+
+- mypy `redundant-cast`: after `if bucket_raw not in BUCKETS: raise`, mypy already narrows `str` → the `Bucket` Literal via the tuple-membership check, so an explicit `cast("Bucket", ...)` is flagged. Lesson: try removing a cast before adding `# type: ignore`; modern mypy narrows more than you expect.
+- When a later commit implements a stub, its Commit-1 "raises NotImplementedError" placeholder test must be deleted/replaced, and any now-unused imports (`pytest`, `load_tasks`) pruned or ruff F401 fails.
+
+### 💼 Interview soundbites
+
+- "The dataset loader fails loud and located — malformed JSON, missing fields, wrong types, and duplicate ids all raise a `DatasetError` with the file:line — because a silently-malformed eval set produces confidently wrong benchmark numbers."
+
+### 📚 Sources
+
+- Python `json` — https://docs.python.org/3/library/json.html
+- mypy type narrowing — https://mypy.readthedocs.io/en/stable/type_narrowing.html
+
 ## Commit 1 — core eval API skeleton (2026-06-14)
 
 ### 🧠 Concepts internalized

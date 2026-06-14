@@ -6,8 +6,6 @@ yet (loaders, metrics, judges, runners arrive in later commits).
 
 from __future__ import annotations
 
-import pytest
-
 import agent_eval_harness as aeh
 from agent_eval_harness import (
     BUCKETS,
@@ -17,7 +15,6 @@ from agent_eval_harness import (
     Runner,
     RunResult,
     Task,
-    load_tasks,
 )
 
 
@@ -80,13 +77,6 @@ def test_metricscore_and_judgeverdict_construct() -> None:
     verdict = JudgeVerdict(score=0.9, reasoning="all key facts present", flagged_hallucinations=[])
     assert 0.0 <= score.value <= 1.0
     assert 0.0 <= verdict.score <= 1.0
-
-
-def test_load_tasks_is_not_implemented_until_commit_2() -> None:
-    with pytest.raises(NotImplementedError):
-        from pathlib import Path
-
-        load_tasks(Path("tasks.jsonl"))
 
 
 def test_runner_protocol_is_structurally_satisfied() -> None:

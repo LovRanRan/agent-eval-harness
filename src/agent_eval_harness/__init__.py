@@ -14,8 +14,10 @@ from agent_eval_harness.datasets import (
     BUCKETS,
     Bucket,
     Dataset,
+    DatasetError,
     Task,
     load_tasks,
+    validate_task,
 )
 from agent_eval_harness.judge import Judge, JudgeVerdict
 from agent_eval_harness.metric import Metric, MetricScore
@@ -35,6 +37,7 @@ __all__ = [
     "Claim",
     "ClaimLabel",
     "Dataset",
+    "DatasetError",
     "Judge",
     "JudgeVerdict",
     "Metric",
@@ -45,4 +48,5 @@ __all__ = [
     "Task",
     "__version__",
     "load_tasks",
+    "validate_task",
 ]
