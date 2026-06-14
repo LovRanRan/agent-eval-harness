@@ -136,6 +136,16 @@ hard_deadline: 2026-10-15   # OSS v0.5 + 文章
 
 > 每个 commit / 每个工作日加一条,倒序(最新在最上)。
 
+### 2026-06-14 — 决策:走完整 4-metric 路线(David 选定)
+
+- **决策**:David 要**完整 4 metric**(不只 factual_correctness)。即含 verification_rate(核心差异化)。
+- **执行顺序**(分块推进):
+  1. **verification_rate** — 起 sandbox-worker(host uvicorn,共享 `/tmp/wayfinder/repos`,免 Docker 卷映射)+ wayfinder 切 `WAYFINDER_VERIFIER_RUNNER=sandboxed_mcp` + `WAYFINDER_TEST_SANDBOX_URL=http://127.0.0.1:8110`,claim_verification 任务出真 verified/contradicted 计数。worker 入口:`uvicorn wayfinder.sandbox.worker:app --port 8110`,env `WAYFINDER_SANDBOX_ALLOWED_ROOTS=/tmp/wayfinder/repos`。
+  2. **ReAct baseline** — `live/react.py`:create_react_agent + 同批 project5 MCP 工具 + gpt-5.5(langchain token 回调可顺带拿到 ReAct 侧真 cost)。
+  3. **routing / citation / cost 来源** — routing 从 partial_summaries 跑了哪些 sub-agent 反推 intent;citation 从 final_output 抽符号 + ast-explorer 反查;cost 从 OpenAI 用量估(wayfinder 侧 tokens=0)。
+  4. **全量跑** 12×3×2 → 4 SVG 图 + EVAL_REPORT.md + headline number。
+- **注**:真跑 verification_rate 会在 host 上执行目标 repo 的测试套件(click/flask/requests,可信);worker 自带 subprocess+rlimit 隔离,Docker 只是多一层容器隔离。
+
 ### 2026-06-14 — Live stack WORKING + first grounded run (no commit; ops milestone)
 
 - **里程碑**:wayfinder live stack 跑通,产出**真实 grounded 输出**。click 被 ingest,mcp-repo-mapper 返回真实依赖图(Python 63 files,完整 `src.click.*` import graph),gpt-5.5 写出有据的架构答案,`errors:[]`。证明全链:GitHub ingest → MCP 分析 → 多 agent LLM → RunSummary →(我的 adapter 映射)→ judge。
