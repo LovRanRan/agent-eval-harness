@@ -10,6 +10,11 @@ Public API (Commit 1 = typed contracts only; logic lands in later commits):
 
 from __future__ import annotations
 
+from agent_eval_harness.citations import (
+    RepoSymbolResolver,
+    default_repo_slug,
+    extract_cited_symbols,
+)
 from agent_eval_harness.datasets import (
     BUCKETS,
     Bucket,
@@ -69,6 +74,7 @@ __all__ = [
     "Metric",
     "MetricScore",
     "ReActBaselineRunner",
+    "RepoSymbolResolver",
     "RiskLevel",
     "RoutingAccuracy",
     "RunResult",
@@ -79,7 +85,9 @@ __all__ = [
     "VerificationRate",
     "WayfinderSupervisorRunner",
     "__version__",
+    "default_repo_slug",
     "evaluate",
+    "extract_cited_symbols",
     "load_tasks",
     "validate_task",
     "write_csv",

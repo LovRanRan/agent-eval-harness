@@ -43,7 +43,7 @@ def _claim(label: ClaimLabel) -> Claim:
 
 def test_all_three_satisfy_the_metric_protocol() -> None:
     assert isinstance(RoutingAccuracy(), Metric)
-    assert isinstance(CitationGrounding(lambda _s: True), Metric)
+    assert isinstance(CitationGrounding(lambda _t, _s: True), Metric)
     assert isinstance(VerificationRate(), Metric)
 
 
@@ -77,7 +77,7 @@ def test_verification_rate_empty_is_zero() -> None:
 
 def test_citation_grounding_fraction_and_ungrounded_list() -> None:
     real = {"pkg.mod.real_fn", "pkg.mod.also_real"}
-    metric = CitationGrounding(lambda s: s in real)
+    metric = CitationGrounding(lambda _t, s: s in real)
     result = _result(cited_symbols=["pkg.mod.real_fn", "pkg.mod.hallucinated", "pkg.mod.also_real"])
     score = metric.score(_task(), result)
     assert score.value == 2 / 3
@@ -85,7 +85,7 @@ def test_citation_grounding_fraction_and_ungrounded_list() -> None:
 
 
 def test_citation_grounding_dedupes_symbols() -> None:
-    metric = CitationGrounding(lambda _s: True)
+    metric = CitationGrounding(lambda _t, _s: True)
     result = _result(cited_symbols=["a", "a", "b"])
     score = metric.score(_task(), result)
     assert score.detail["total"] == 2  # de-duplicated
@@ -93,6 +93,6 @@ def test_citation_grounding_dedupes_symbols() -> None:
 
 
 def test_citation_grounding_empty_scores_one_but_flags_total_zero() -> None:
-    score = CitationGrounding(lambda _s: True).score(_task(), _result(cited_symbols=[]))
+    score = CitationGrounding(lambda _t, _s: True).score(_task(), _result(cited_symbols=[]))
     assert score.value == 1.0
     assert score.detail["total"] == 0

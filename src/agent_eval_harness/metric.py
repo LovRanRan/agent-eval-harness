@@ -22,9 +22,9 @@ from agent_eval_harness.datasets import Task
 from agent_eval_harness.judge import Judge
 from agent_eval_harness.runner import RunResult
 
-# Resolves whether a cited code symbol / file path actually exists in the repo.
-# In production this wraps mcp-ast-explorer; in tests a fake is injected.
-SymbolResolver = Callable[[str], bool]
+# Resolves whether a cited code symbol / file path actually exists in the task's
+# repo. Task-aware so it can locate the right repo clone; in tests a fake is injected.
+SymbolResolver = Callable[[Task, str], bool]
 
 
 @dataclass(frozen=True, slots=True)
@@ -74,7 +74,7 @@ class CitationGrounding:
 
     def score(self, task: Task, result: RunResult) -> MetricScore:
         unique = dict.fromkeys(result.cited_symbols)  # preserves order, dedupes
-        resolved = {symbol: self._resolver(symbol) for symbol in unique}
+        resolved = {symbol: self._resolver(task, symbol) for symbol in unique}
         total = len(resolved)
         grounded = [s for s, ok in resolved.items() if ok]
         ungrounded = [s for s, ok in resolved.items() if not ok]

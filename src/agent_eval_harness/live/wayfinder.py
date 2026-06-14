@@ -21,6 +21,7 @@ import time
 from collections.abc import Mapping
 from typing import Any
 
+from agent_eval_harness.citations import extract_cited_symbols
 from agent_eval_harness.runner import AgentInvoke
 
 _TERMINAL = frozenset({"completed", "failed"})
@@ -41,11 +42,12 @@ def map_run_summary(summary: Mapping[str, Any]) -> dict[str, Any]:
     # Prefer the top-level classified intent (wayfinder now surfaces it); fall back
     # to trace_metadata for older runs.
     route = str(summary.get("intent") or meta.get("intent") or meta.get("route") or "")
+    answer = summary.get("final_output") or ""
     return {
-        "answer": summary.get("final_output") or "",
+        "answer": answer,
         "route": route,
         "claims": claims,
-        "cited_symbols": [],
+        "cited_symbols": extract_cited_symbols(answer),
         "tokens": _as_int(meta.get("tokens")),
         "cost_usd": _as_float(meta.get("cost_usd")),
     }

@@ -20,6 +20,7 @@ import subprocess
 from pathlib import Path
 from typing import Any
 
+from agent_eval_harness.citations import extract_cited_symbols
 from agent_eval_harness.runner import AgentInvoke
 
 _PROMPT = """You are exploring an unfamiliar code repository to answer a question.
@@ -71,7 +72,7 @@ def _map_react_result(answer: str, tokens: int, *, cost_per_1k: float = 0.0) -> 
         "answer": answer,
         "route": "react",
         "claims": [],
-        "cited_symbols": [],
+        "cited_symbols": extract_cited_symbols(answer),
         "tokens": tokens,
         "cost_usd": round(tokens / 1000.0 * cost_per_1k, 6),
     }

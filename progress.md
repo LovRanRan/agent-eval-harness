@@ -136,6 +136,14 @@ hard_deadline: 2026-10-15   # OSS v0.5 + 文章
 
 > 每个 commit / 每个工作日加一条,倒序(最新在最上)。
 
+### 2026-06-14 — citation_grounding 来源
+
+- **做了什么**:`citations.py` —— `extract_cited_symbols(text)`(从答案抽 backticked / dotted.path / file.py 引用,去重 cap 25,滤散文)+ `RepoSymbolResolver`(task 感知:按 repo_url slug 找 clone,查 file 存在或符号末段有 `def/class` 定义,clone 缺失=False=未落地)+ `default_repo_slug`。`CitationGrounding` 的 `SymbolResolver` 改 task 感知 `Callable[[Task,str],bool]`。两个 adapter(wayfinder map / react map)现在从答案抽 `cited_symbols`。
+- **意义**:metric 能抓幻觉引用 —— wayfinder 引真符号 → grounding 高;ReAct 自由发挥可能引幻觉 → 低。对比成立。
+- **测试**:`tests/test_citations.py` 6 个 + 改 test_metrics 为 task 感知 resolver;gate 全绿(ruff/format/mypy 11/pytest **61**)。
+- **运行注**:全量跑时 resolver 单独 clone 一份(用 `default_repo_slug`)做查证,跟 wayfinder/react 各自 clone 命名解耦。
+- **下一步**:cost 来源(ReAct langchain 真 token;wayfinder 侧用 token 估或标 partial)。
+
 ### 2026-06-14 — ReAct baseline(对照组代码完成)
 
 - **做了什么**:`live/react.py` —— ReAct 单 agent 对照组。`react_invoke(mcp_urls, model=gpt-5.5)` 返回 `AgentInvoke`:shallow clone repo → 用 `MultiServerMCPClient`(streamable_http)加载 project5 MCP 工具 → `create_react_agent(ChatOpenAI)` → `ainvoke` → 映射成标准 raw dict。纯函数 `_extract_answer_and_tokens`(取最后 AI 消息 + 累加 token)、`_map_react_result`(route="react"、claims=[] —— ReAct 无结构化 verifier,verification_rate 天然低,正是对比点)、`_slug`。`[react]` extra(langgraph + langchain-openai + langchain-mcp-adapters,懒加载)。`cli.build_runner` 接好 react_baseline(env `REACT_*_MCP_URL` / `REACT_OPENAI_MODEL`)。
