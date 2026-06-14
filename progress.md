@@ -82,27 +82,52 @@ hard_deadline: 2026-10-15   # OSS v0.5 + 文章
 
 ### Pre-build（从 `fast_path.md` Project 7 节）
 
-- [X]  必读清单第 3 篇(Hamel "Your AI Product Needs Evals")—— 已读
-- [ ]  LangSmith experiments 一页 — https://docs.smith.langchain.com/evaluation(~30min）
-- [ ]  (建议先决定)框架 vs 研究的边界:eval API 设计 + dataset schema(Haichuan 写 design note)
+- [x] 必读清单第 3 篇(Hamel "Your AI Product Needs Evals")—— 已读
+- [ ] LangSmith experiments 一页 — https://docs.smith.langchain.com/evaluation(~30min）
+- [/] eval API 设计 + dataset schema —— `DESIGN.md` guided 模板已起,Commit 1 定稿
 
-### Build（按 commit 颗粒度,架构由 Haichuan 主导）
+> **执行模式 (2026-06-14, David 授权)**:本项目全部由 Claude 写(含原 rule 13–16 的设计/skeleton/反向讲解部分),流程不变 —— 写文件 → gate 绿 → 在 Mac 上 `git add/commit/push`(走 osascript) → 更新 progress+LEARNINGS → 报告 → David 确认 → 下一个 commit。每个 commit 完整收尾后停下等确认再开下一个。
+
+---
+
+### Build — Phase 1：最小可跑框架（能跑出第一个 eval 所需的全部）
 
 - [x] **Commit 0.a** — repo init + scope doc + README 概要(已 push `8206a48`)
-- [x] **Commit 0.b** — uv / ruff / mypy / pytest 脚手架 + CI(已 push `501e4f2`;CI 首跑因 `uv pip install --system` 撞 PEP 668 失败,已改 `uv sync`+`uv run` 修复,待重推)
-- [ ]  **Commit 1** — core eval API 骨架(datasets / runner / metric / judge 接口)← **design note 先行(Haichuan 主导)**,见 `DESIGN.md`
-- [ ]  **Commit 2** — 小规模评测先跑(10–15 repo,Supervisor vs ReAct)→ 拿 wayfinder 简历数字
-- [ ]  **Commit 3** — 扩到完整 40-OSS-repo 数据集 + 4 metrics(含 verification_rate)
-- [ ]  **Commit 4** — failure-mode taxonomy + token/cost tracking + CLI runner
-- [ ]  **Commit 5** — v0.5 跑通 P3/P4/P6 作 examples + EVAL_REPORT.md + 4 SVG 图
+- [x] **Commit 0.b** — uv / ruff / mypy / pytest 脚手架 + CI(已 push;CI 首跑撞 PEP 668 `--system`,改 `uv sync`+`uv run` 修好 `4de3404`;remote = `9d8dd11`,gate 全绿)
+- [ ] **Commit 1** — core eval API 骨架:`DESIGN.md` 定稿 + `datasets` / `runner` / `metric` / `judge` 的 Protocol + dataclass(`Task` / `RunResult` / `MetricScore` / `JudgeVerdict`),纯类型契约无逻辑 + mypy strict 全绿 + 骨架占位测试
+- [ ] **Commit 2** — datasets 层:`Task` 实现 + JSONL 加载/校验 + 一个 fixture 数据集(2–3 条覆盖 4 桶)+ 加载/校验测试
+- [ ] **Commit 3** — 确定性 metrics:`routing_accuracy` / `citation_grounding`(AST 反查)/ `verification_rate`(从 claim 标签算)实现 + 单测(用 fixture RunResult)
+- [ ] **Commit 4** — LLM-as-judge:`factual_correctness` judge(Claude 结构化输出)+ self-consistency 包装(3 跑,variance<0.1)+ judge bias 披露 + mock LLM 测试
+- [ ] **Commit 5** — runner + 架构 adapter:`RunResult` 归一化 + Wayfinder Supervisor adapter + ReAct baseline adapter(`create_react_agent` 同 5 MCP tools)+ token/cost 捕获 + mock 测试
+- [ ] **Commit 6** — 最小 CLI runner:`eval run --dataset <f> --arch <a> → CSV` + 配置加载 + 端到端(mock)测试
+
+### Build — Phase 2：小规模 eval（尽早拿数字喂简历）
+
+- [ ] **Commit 7** — 策划 10–15 repo 数据集(4 桶,每个 repo ≥1 可跑 pytest/jest,smoke 筛掉破损套件)+ 标注 ground truth(query / ≥3 key facts / expected route / verifier test_id / bug-fix files)
+- [ ] **Commit 8** — 🚀 跑小规模 eval(Supervisor vs ReAct)→ CSV → 算出 headline number → 立刻进 wayfinder 简历 bullet(依赖:API key + wayfinder + 3 MCP 可跑;在 Mac 上跑)
+
+### Build — Phase 3：完整 40-repo benchmark + 报告
+
+- [ ] **Commit 9** — 扩到完整 40-OSS-repo(10 web frameworks + 10 ML libs + 10 CLI tools + 10 distributed systems)+ 各桶 ground truth 补全
+- [ ] **Commit 10** — 🚀 跑完整 40-repo 双架构 eval → CSVs(self-consistency 3 跑)
+- [ ] **Commit 11** — 4 张 SVG 图(matplotlib):routing accuracy bar / factual correctness boxplot / cost scatter / verification rate per arch
+- [ ] **Commit 12** — `EVAL_REPORT.md`:conclusion + methodology + data tables + charts + 3 段 trade-off + 一句话 headline number
+- [ ] **Commit 13** — Iteration round 1:修最差桶(通常 Claim Verification 的 contradicted 检出 <80%)→ 调 verifier 触发 → 重跑 → before/after
+
+### Build — Phase 4：框架硬化 + OSS 发布
+
+- [ ] **Commit 14** — failure-mode taxonomy(hallucination / tool misuse / retrieval / reasoning)分类器 + 完整 token/cost tracking + CLI 打磨 + 集成 adapter(LangGraph / bare LangChain)
+- [ ] **Commit 15** — v0.5:框架跑通 P3 `arxiv-rag` / P4 `single-file-explainer` / P6 `wayfinder` 作 examples
+- [ ] **Commit 16** — OSS v1.0:docs(quickstart + API + examples)+ 测试覆盖 + README 终版 + 打包(可选 PyPI)
+- [ ] **Commit 17** — Iteration round 2:部署后 live/cloud 重跑(抓 cold start / quota / timeout)→ 更新报告 before/after
 
 ### Ship
 
-- [ ]  全部 acceptance `[x]`
-- [ ]  README 终版 + OSS v1.0(docs/tests/examples)
-- [ ]  `EVAL_REPORT.md` + headline number 进简历
-- [ ]  写 retro
-- [ ]  `TASKS.md` ship 行 `[x]`
+- [ ] 全部 `final_checklist.md` Project 7 acceptance `[x]`
+- [ ] README 终版 + OSS v1.0(docs/tests/examples)公开
+- [ ] `EVAL_REPORT.md` + 4 SVG 图 + headline number 进简历 + 第 1 篇技术文章草稿
+- [ ] Star push(HN / Reddit / Twitter / LangChain Discord)+ 1–2 个 external issue;eval 方法论写进 P3/P4/P6 三个 README
+- [ ] 写 retro + `TASKS.md` Project 7 ship 行 `[x]`
 
 ---
 
