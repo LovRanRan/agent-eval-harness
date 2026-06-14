@@ -70,8 +70,8 @@ hard_deadline: 2026-10-15   # OSS v0.5 + 文章
 | ---------------------- | ---------------------------------------------------------- |
 | 当前阶段               | **Building — Phase 1 完成**(最小可跑框架 C1–C6 全绿);下一步 = Phase 2 数据集策划/真跑(需 API key + wayfinder) |
 | 进度                   | 0 / N acceptance criteria done(脚手架不计 acceptance）     |
-| 完成 commits           | 0.a · 0.b · CI fix · C1–C7 · C8 wayfinder live · **ReAct baseline + wayfinder verifier-B(verification_rate 打通)** |
-| Gate 状态              | ✅ ruff / ruff-format / mypy --strict(11 files)/ pytest(56 passed);CI uv-native(`uv sync`+`uv run`) |
+| 完成 commits           | C1–C8 · ReAct baseline · verifier-B · **4 metric 来源全 + benchmark driver/CLI** |
+| Gate 状态              | ✅ ruff / ruff-format / mypy --strict(12 files)/ pytest(64 passed);CI uv-native(`uv sync`+`uv run`) |
 | 🔑 资源状态            | Anthropic key ✅(judge)· OpenAI key ✅(gpt-5.5 可用)· Docker ✅(v29.4.3 daemon up)· wayfinder+project5 ✅ —— **真跑前置全齐** |
 | 软截止                 | 2026-09-15                                                 |
 | 硬截止                 | 2026-10-15                                                 |
@@ -135,6 +135,14 @@ hard_deadline: 2026-10-15   # OSS v0.5 + 文章
 ## 📝 Daily Logs
 
 > 每个 commit / 每个工作日加一条,倒序(最新在最上)。
+
+### 2026-06-14 — cost 来源 + 全量跑 driver + benchmark CLI
+
+- **cost 来源**:ReAct 侧 langchain 真 token(react.py 已抓);wayfinder 侧 token 计量已加(wayfinder commit `e70497f`,trace_metadata.tokens),`map_run_summary` 早就读 `meta["tokens"]`。cost($) 在 summarize 里用 `tokens × price_per_1k` 统一算,两架构可比。**4 个 metric 来源至此全部就位**。
+- **driver**:`experiment.py` —— `run_benchmark(tasks, runners, metrics, out_dir, price)`(每架构 evaluate + 写 `<arch>.csv` + `summary.json`)、`summarize`(每架构每 metric 均值 + token/cost 总计 + error 数)、`clone_repos_for_resolution`(给 citation resolver 单独 clone)。
+- **CLI**:`agent-eval benchmark --dataset --out --judge-model --runs --price-per-1k` —— 接 live judge(SelfConsistentJudge+AnthropicChatModel)+ CitationGrounding(RepoSymbolResolver)+ 两架构 runner,跑 run_benchmark。
+- **测试**:`tests/test_experiment.py` 2 个(run_benchmark 写 CSV+summary、summarize 均值/成本/error)+ benchmark 解析测试;gate 全绿(ruff/format/mypy 12/pytest **64**)。
+- **下一步(花钱)**:装 `[react]` 依赖 + 起 mcp-test-runner(8103)→ `agent-eval benchmark` 真跑 12×3×2 → 4 图 + EVAL_REPORT。
 
 ### 2026-06-14 — citation_grounding 来源
 

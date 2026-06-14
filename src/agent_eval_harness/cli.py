@@ -85,6 +85,56 @@ def run_eval(
     return len(rows)
 
 
+def _build_live_metrics(
+    resolution_root: Path, *, judge_model: str, judge_runs: int
+) -> list[Metric]:
+    """All four metrics wired live: routing + verification (deterministic),
+    citation_grounding (repo-clone resolver), factual_correctness (self-consistent
+    Claude judge)."""
+    from agent_eval_harness.citations import RepoSymbolResolver
+    from agent_eval_harness.judge import (
+        AnthropicChatModel,
+        FactualCorrectnessJudge,
+        SelfConsistentJudge,
+    )
+    from agent_eval_harness.metric import CitationGrounding, JudgeMetric
+
+    judge = SelfConsistentJudge(
+        FactualCorrectnessJudge(AnthropicChatModel(judge_model)), runs=judge_runs
+    )
+    resolver = RepoSymbolResolver([resolution_root])
+    return [
+        RoutingAccuracy(),
+        VerificationRate(),
+        CitationGrounding(resolver),
+        JudgeMetric(judge),
+    ]
+
+
+def run_benchmark_cmd(
+    dataset: Path,
+    out: Path,
+    *,
+    judge_model: str = "claude-sonnet-4-6",
+    judge_runs: int = 3,
+    price_per_1k_usd: float = 0.0,
+) -> dict[str, object]:
+    """Full benchmark: both architectures × all 4 metrics → CSVs + summary.json."""
+    from agent_eval_harness.experiment import (
+        clone_repos_for_resolution,
+        run_benchmark,
+        summarize,
+    )
+
+    tasks = load_tasks(dataset)
+    resolution_root = out / "repos"
+    clone_repos_for_resolution(tasks, resolution_root)
+    metrics = _build_live_metrics(resolution_root, judge_model=judge_model, judge_runs=judge_runs)
+    runners = {arch: build_runner(arch) for arch in ARCHITECTURES}
+    rows_by_arch = run_benchmark(tasks, runners, metrics, out, price_per_1k_usd=price_per_1k_usd)
+    return summarize(rows_by_arch, price_per_1k_usd=price_per_1k_usd)
+
+
 def _build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(prog="agent-eval", description="agent-eval-harness runner")
     sub = parser.add_subparsers(dest="command", required=True)
@@ -92,6 +142,15 @@ def _build_parser() -> argparse.ArgumentParser:
     run.add_argument("--dataset", required=True, type=Path, help="path to a tasks.jsonl file")
     run.add_argument("--arch", required=True, choices=ARCHITECTURES, help="architecture to run")
     run.add_argument("--out", required=True, type=Path, help="output CSV path")
+
+    bench = sub.add_parser("benchmark", help="run all architectures x 4 metrics -> CSVs + summary")
+    bench.add_argument("--dataset", required=True, type=Path, help="path to a tasks.jsonl file")
+    bench.add_argument("--out", required=True, type=Path, help="output directory")
+    bench.add_argument("--judge-model", default="claude-sonnet-4-6", help="LLM-as-judge model")
+    bench.add_argument("--runs", type=int, default=3, help="self-consistency judge runs")
+    bench.add_argument(
+        "--price-per-1k", type=float, default=0.0, help="USD per 1k tokens for cost column"
+    )
     return parser
 
 
@@ -100,6 +159,16 @@ def main(argv: Sequence[str] | None = None) -> int:
     if args.command == "run":
         count = run_eval(args.dataset, args.arch, args.out)
         print(f"wrote {count} rows to {args.out}")
+        return 0
+    if args.command == "benchmark":
+        run_benchmark_cmd(
+            args.dataset,
+            args.out,
+            judge_model=args.judge_model,
+            judge_runs=args.runs,
+            price_per_1k_usd=args.price_per_1k,
+        )
+        print(f"benchmark written to {args.out} (see summary.json)")
         return 0
     return 1
 

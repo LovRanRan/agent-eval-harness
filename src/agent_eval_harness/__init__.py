@@ -25,6 +25,11 @@ from agent_eval_harness.datasets import (
     validate_task,
 )
 from agent_eval_harness.evaluate import EvalRow, evaluate, write_csv
+from agent_eval_harness.experiment import (
+    clone_repos_for_resolution,
+    run_benchmark,
+    summarize,
+)
 from agent_eval_harness.judge import (
     AnthropicChatModel,
     ChatModel,
@@ -85,10 +90,13 @@ __all__ = [
     "VerificationRate",
     "WayfinderSupervisorRunner",
     "__version__",
+    "clone_repos_for_resolution",
     "default_repo_slug",
     "evaluate",
     "extract_cited_symbols",
     "load_tasks",
+    "run_benchmark",
+    "summarize",
     "validate_task",
     "write_csv",
 ]

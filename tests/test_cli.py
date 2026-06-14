@@ -62,3 +62,14 @@ def test_build_runner_wires_react_baseline() -> None:
 def test_build_runner_rejects_unknown_arch() -> None:
     with pytest.raises(ValueError, match="unknown arch"):
         build_runner("nope")
+
+
+def test_benchmark_subcommand_parses() -> None:
+    from agent_eval_harness.cli import _build_parser
+
+    args = _build_parser().parse_args(
+        ["benchmark", "--dataset", "d.jsonl", "--out", "o", "--runs", "5", "--price-per-1k", "3.0"]
+    )
+    assert args.command == "benchmark"
+    assert args.runs == 5
+    assert args.price_per_1k == 3.0
