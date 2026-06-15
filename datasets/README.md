@@ -24,3 +24,15 @@ intent taxonomy (`architectural` / `behavioral` / `debug`).
 > published (per project rule: resume numbers must be vetted). Review focus:
 > the three `claim_verification` expected verdicts and the `bug_localization`
 > suspect modules.
+
+## `full_v1.jsonl` — 40-task benchmark (4 buckets × 10, 10 repos)
+
+Scales `small_v1` to the full 40-task benchmark over 10 Python OSS repos with pytest
+suites: click, flask, requests, httpx, rich, jinja, werkzeug, starlette,
+itsdangerous, gunicorn. Ground truth authored by reading each repo at its pinned
+SHA (module structure, located functions, real test node IDs).
+
+> ⚠️ **Pending Haichuan truthfulness review** before publishing any number — in
+> particular the `claim_verification` key facts + the function-tracing "what calls
+> it" claims for the 7 newly-added repos (architecture + bug-localization GT is from
+> verified module structure and is higher-confidence).
