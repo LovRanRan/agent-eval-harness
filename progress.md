@@ -136,6 +136,13 @@ hard_deadline: 2026-10-15   # OSS v0.5 + 文章
 
 > 每个 commit / 每个工作日加一条,倒序(最新在最上)。
 
+### 2026-06-14 — 干净 re-run(修好 ReAct pytest 工具后)
+
+- **修复**:mcp-test-runner 改 `sys.executable -m pytest`(commit `e24d639`)+ 用 `--extra dev` 起 8103,ReAct 的 run_pytest 现在真能跑。
+- **干净结果**(`report/small_v1/`,覆盖旧):wayfinder factual 0.582 / verification 0.188 / routing 0.50 / citation 0.373 / **77.9k tokens**(0 err);react factual 0.696 / verification 0.0 / routing 0.0 / citation 0.751 / **1.165M tokens**(1 err)。
+- **更强的 headline**:成本差从 ~11× 拉大到 **~15×**(78k vs 1.17M)—— 工具修好后 ReAct 干更多活、更贵。**关键**:verification 0.19 vs 0.0 现在证明是**架构性**差异(ReAct 工具能用了仍 0,因为它没结构化 verifier),不是上次的 bug。factual 仍 ReAct 略高(0.70 vs 0.58,如实写报告)。
+- 图 + EVAL_REPORT 已用干净数据重生成。
+
 ### 2026-06-14 — 🏁 首次真跑完成(Supervisor vs ReAct,12 任务,0 错误)
 
 - **结果**(`report/small_v1/`):wayfinder factual 0.615 / verification 0.188 / routing 0.50 / citation 0.372 / **77.2k tokens**;react factual 0.729 / verification 0.0 / routing 0.0 / citation 0.742 / **884.8k tokens**。

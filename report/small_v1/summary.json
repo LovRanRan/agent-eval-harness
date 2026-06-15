@@ -3,24 +3,24 @@
     "tasks": 12,
     "errors": 0,
     "metrics": {
-      "citation_grounding": 0.3723,
-      "factual_correctness": 0.6153,
+      "citation_grounding": 0.3734,
+      "factual_correctness": 0.5819,
       "routing_accuracy": 0.5,
       "verification_rate": 0.1875
     },
-    "total_tokens": 77243,
+    "total_tokens": 77878,
     "cost_usd": 0.0
   },
   "react_baseline": {
     "tasks": 12,
-    "errors": 0,
+    "errors": 1,
     "metrics": {
-      "citation_grounding": 0.7423,
-      "factual_correctness": 0.7292,
+      "citation_grounding": 0.7506,
+      "factual_correctness": 0.6955,
       "routing_accuracy": 0.0,
       "verification_rate": 0.0
     },
-    "total_tokens": 884840,
+    "total_tokens": 1165148,
     "cost_usd": 0.0
   }
 }
