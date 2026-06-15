@@ -1,26 +1,26 @@
 {
   "react_baseline": {
     "tasks": 40,
-    "errors": 4,
+    "errors": 6,
     "metrics": {
-      "citation_grounding": 0.7498,
-      "factual_correctness": 0.7,
+      "citation_grounding": 0.8838,
+      "factual_correctness": 0.7025,
       "routing_accuracy": 0.0,
       "verification_rate": 0.0
     },
-    "total_tokens": 4969240,
+    "total_tokens": 4812463,
     "cost_usd": 0.0
   },
   "wayfinder_supervisor": {
     "tasks": 40,
     "errors": 0,
     "metrics": {
-      "citation_grounding": 0.3732,
-      "factual_correctness": 0.5625,
+      "citation_grounding": 0.7764,
+      "factual_correctness": 0.4817,
       "routing_accuracy": 0.475,
-      "verification_rate": 0.2087
+      "verification_rate": 0.0938
     },
-    "total_tokens": 476215,
+    "total_tokens": 396223,
     "cost_usd": 0.0
   }
 }

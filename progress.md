@@ -136,6 +136,16 @@ hard_deadline: 2026-10-15   # OSS v0.5 + 文章
 
 > 每个 commit / 每个工作日加一条,倒序(最新在最上)。
 
+### 2026-06-15 — full_v1 40 任务公平对比(两臂新 resolver + committed wayfinder)
+
+- **做了什么**:把 small_v1 + full_v1 两个数据集都用「修过的 resolver + committed wayfinder(prompt 已 stash)」重跑两臂,出公平对比报告。
+- **full_v1 公平结果**:wayfinder cit 0.776 / fac 0.482 / rou 0.475 / ver 0.094 / **396k tok / 0 err**;react cit 0.884 / fac 0.702 / rou 0 / ver 0 / **4.81M tok / 6 err**。成本 **12.1×**;citation gap 修 resolver 后从 0.38→**0.11**。
+- **新发现(可靠性)**:ReAct 6 个失败**全是 `GraphRecursionError`**——开放循环在更难的 repo 上不收敛、撞递归上限。**15% 非终止率**是单 agent 循环的真实架构缺陷,有界 supervisor 0 错误。注意 react 的 0.70 factual 只在它跑完的 34 个任务上算。
+- **诚实定位**:factual 是 wayfinder 真短板(0.48 vs 0.70,难集上更宽);citation 打平偏弱不幻觉;赢面=成本 12× + 0 错误 + 路由/验证(后两者结构性)。
+- **成本真相**:今晚 OpenAI 实扣 ~$31(auto-recharge 真金白银,非免费 credit),几乎全是 ReAct 烧的——账单本身印证 12× 成本差。judge(Claude)便宜且对比中抵消。
+- **prompt 决策**:wayfinder synthesizer prompt 改动效果主要被 resolver 覆盖、且略伤 factual → 已 `git stash`(未提交),committed 代码数字更好。
+- **owed / 待办**:① harness 加「持久化 agent 答案 → 离线重打分」(避免改 metric 就重跑烧钱)+ 逐任务进度日志;② 数据集 GT 待 Haichuan 审才能上简历。
+
 ### 2026-06-15 — citation metric 缺陷发现 + 修复(resolver 误判真实属性引用)
 
 - **动机**:David 问"wayfinder citation 0.37 是真弱还是嘴笨"。同模型(gpt-5.5)下 ReAct citation 0.75,怀疑是 wayfinder synthesizer 不点名符号。
