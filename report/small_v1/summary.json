@@ -1,26 +1,26 @@
 {
-  "wayfinder_supervisor": {
-    "tasks": 12,
-    "errors": 0,
-    "metrics": {
-      "citation_grounding": 0.3734,
-      "factual_correctness": 0.5819,
-      "routing_accuracy": 0.5,
-      "verification_rate": 0.1875
-    },
-    "total_tokens": 77878,
-    "cost_usd": 0.0
-  },
   "react_baseline": {
     "tasks": 12,
     "errors": 1,
     "metrics": {
-      "citation_grounding": 0.7506,
-      "factual_correctness": 0.6955,
+      "citation_grounding": 0.9373,
+      "factual_correctness": 0.7106,
       "routing_accuracy": 0.0,
       "verification_rate": 0.0
     },
-    "total_tokens": 1165148,
+    "total_tokens": 1144468,
+    "cost_usd": 0.0
+  },
+  "wayfinder_supervisor": {
+    "tasks": 12,
+    "errors": 0,
+    "metrics": {
+      "citation_grounding": 0.8006,
+      "factual_correctness": 0.5944,
+      "routing_accuracy": 0.5,
+      "verification_rate": 0.1875
+    },
+    "total_tokens": 78256,
     "cost_usd": 0.0
   }
 }
