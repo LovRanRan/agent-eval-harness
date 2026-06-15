@@ -1,0 +1,45 @@
+task_id,bucket,arch,citation_grounding,factual_correctness,routing_accuracy,verification_rate,tokens,cost_usd,latency_s,error
+arch-click,architecture,react_baseline,0.25,1.0,0.0,0.0,203073,0.0,164.0701,
+arch-flask,architecture,react_baseline,0.36,1.0,0.0,0.0,213499,0.0,96.1125,
+arch-requests,architecture,react_baseline,0.9090909090909091,1.0,0.0,0.0,144260,0.0,98.0122,
+arch-httpx,architecture,react_baseline,0.24,1.0,0.0,0.0,88597,0.0,84.3242,
+arch-rich,architecture,react_baseline,0.29411764705882354,1.0,0.0,0.0,396788,0.0,191.8953,
+arch-jinja,architecture,react_baseline,1.0,1.0,0.0,0.0,137277,0.0,92.8092,
+arch-werkzeug,architecture,react_baseline,0.17391304347826086,1.0,0.0,0.0,120193,0.0,114.075,
+arch-starlette,architecture,react_baseline,0.12,1.0,0.0,0.0,75484,0.0,65.4359,
+arch-itsdangerous,architecture,react_baseline,0.2727272727272727,1.0,0.0,0.0,76629,0.0,58.0394,
+arch-gunicorn,architecture,react_baseline,1.0,0.6999999999999998,0.0,0.0,455295,0.0,262.546,
+trace-flask-dispatch,function_tracing,react_baseline,0.8181818181818182,0.9,0.0,0.0,174068,0.0,156.8101,
+trace-requests-rebuild-auth,function_tracing,react_baseline,0.6666666666666666,1.0,0.0,0.0,157459,0.0,111.2124,
+trace-click-invoke,function_tracing,react_baseline,0.9,1.0,0.0,0.0,40904,0.0,91.0822,
+trace-httpx-raise-for-status,function_tracing,react_baseline,1.0,1.0,0.0,0.0,154482,0.0,154.105,
+trace-rich-console-print,function_tracing,react_baseline,0.5714285714285714,1.0,0.0,0.0,191967,0.0,168.1082,
+trace-jinja-compile,function_tracing,react_baseline,1.0,1.0,0.0,0.0,93989,0.0,163.2876,
+trace-werkzeug-parse-cookie,function_tracing,react_baseline,,,,,0,0.0,250.7071,"GraphRecursionError: Recursion limit of 25 reached without hitting a stop condition. You can increase the limit by setting the `recursion_limit` config key.
+For troubleshooting, visit: https://docs.langchain.com/oss/python/langgraph/errors/GRAPH_RECURSION_LIMIT"
+trace-starlette-url-path-for,function_tracing,react_baseline,1.0,1.0,0.0,0.0,74186,0.0,99.3043,
+trace-itsdangerous-unsign,function_tracing,react_baseline,0.7777777777777778,1.0,0.0,0.0,38781,0.0,40.3405,
+trace-gunicorn-arbiter-run,function_tracing,react_baseline,1.0,1.0,0.0,0.0,192718,0.0,155.8146,
+claim-requests-auth-strip,claim_verification,react_baseline,1.0,0.03333333333333333,0.0,0.0,30240,0.0,35.3385,
+claim-requests-fragment,claim_verification,react_baseline,1.0,0.0,0.0,0.0,35301,0.0,38.0067,
+claim-requests-cookie-redirect,claim_verification,react_baseline,1.0,0.0,0.0,0.0,23788,0.0,29.0346,
+claim-itsdangerous-bad-sig,claim_verification,react_baseline,1.0,0.0,0.0,0.0,43241,0.0,74.982,
+claim-httpx-get,claim_verification,react_baseline,0.0,0.10000000000000002,0.0,0.0,15856,0.0,13.8399,
+claim-jinja-finalize,claim_verification,react_baseline,1.0,0.10000000000000002,0.0,0.0,18341,0.0,16.1628,
+claim-rich-print-json,claim_verification,react_baseline,1.0,0.43333333333333335,0.0,0.0,71165,0.0,18.4349,
+claim-werkzeug-shared-data,claim_verification,react_baseline,0.6666666666666666,0.10000000000000002,0.0,0.0,83362,0.0,42.3775,
+claim-starlette-middleware,claim_verification,react_baseline,1.0,0.10000000000000002,0.0,0.0,25578,0.0,14.4394,
+claim-itsdangerous-serializer,claim_verification,react_baseline,1.0,0.0,0.0,0.0,14367,0.0,25.0001,
+bug-requests-auth-redirect,bug_localization,react_baseline,0.6470588235294118,1.0,0.0,0.0,64702,0.0,74.1727,
+bug-flask-session,bug_localization,react_baseline,,,,,0,0.0,132.951,"GraphRecursionError: Recursion limit of 25 reached without hitting a stop condition. You can increase the limit by setting the `recursion_limit` config key.
+For troubleshooting, visit: https://docs.langchain.com/oss/python/langgraph/errors/GRAPH_RECURSION_LIMIT"
+bug-click-default,bug_localization,react_baseline,0.7142857142857143,0.7333333333333334,0.0,0.0,107987,0.0,124.4167,
+bug-httpx-redirect,bug_localization,react_baseline,0.9166666666666666,1.0,0.0,0.0,114439,0.0,122.4566,
+bug-jinja-autoescape,bug_localization,react_baseline,1.0,0.20000000000000004,0.0,0.0,228455,0.0,187.1579,
+bug-werkzeug-cookie,bug_localization,react_baseline,,,,,0,0.0,185.9348,"GraphRecursionError: Recursion limit of 25 reached without hitting a stop condition. You can increase the limit by setting the `recursion_limit` config key.
+For troubleshooting, visit: https://docs.langchain.com/oss/python/langgraph/errors/GRAPH_RECURSION_LIMIT"
+bug-starlette-routing,bug_localization,react_baseline,1.0,1.0,0.0,0.0,155879,0.0,155.5005,
+bug-itsdangerous-signer,bug_localization,react_baseline,,,,,0,0.0,101.4805,"GraphRecursionError: Recursion limit of 25 reached without hitting a stop condition. You can increase the limit by setting the `recursion_limit` config key.
+For troubleshooting, visit: https://docs.langchain.com/oss/python/langgraph/errors/GRAPH_RECURSION_LIMIT"
+bug-gunicorn-worker,bug_localization,react_baseline,0.75,0.85,0.0,0.0,452842,0.0,206.5075,
+bug-rich-style,bug_localization,react_baseline,0.9444444444444444,0.9499999999999998,0.0,0.0,454048,0.0,415.0533,

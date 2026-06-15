@@ -105,7 +105,7 @@ hard_deadline: 2026-10-15   # OSS v0.5 + 文章
 ### Build — Phase 2：小规模 eval（尽早拿数字喂简历）
 
 - [x] **Commit 7** — 数据集 `datasets/small_v1.jsonl`(12 任务,4 桶各 3,5 个有 pytest 的 Python repo:click/flask/requests/httpx/rich)。GT 对着 pin 的真仓库读源码/测试核过(verifier_test_id 是真 nodeid、bug_fix_files 真存在)。`load_tasks` 校验通过(4 桶各 3,invariants OK)。**待你 truthfulness review** 后才出数字
-- [/] **Commit 8** — live wiring + 🚀 跑小规模 eval。**已做(代码)**:`live/wayfinder.py`(`map_run_summary` + `wayfinder_invoke`:POST /explain → 轮询 /status → 映射 RunSummary;`[live]` extra httpx;httpx.MockTransport 测全链路)+ `cli.build_runner` 接 `WAYFINDER_URL`。Anthropic key 已验证(judge 用)。**待你资源才能真跑**:OpenAI key(wayfinder 跑在 gpt-5.5)+ Docker 起 6 服务栈(含 sandbox-worker 才有真 verification_rate)+ ReAct baseline 接线(需 live 迭代)+ 数据集 GT(你审)。gate 全绿(52 tests)
+- [/] **Commit 8** — live wiring + 🚀 跑小规模 eval。**已做(代码)**:`live/wayfinder.py`(`map_run_summary` + `wayfinder_invoke`:POST /explain → 轮询 /status → 映射 RunSummary;`[live]` extra httpx;httpx.MockTransport 测全链路)+ `cli.build_runner` 接 `WAYFINDER_URL`。Anthropic key 已验证(judge 用)。**待你资源才能真跑**:OpenAI key(wayfinder 跑在 gpt-5.5)+ Docker 起 6 服务栈(含 sandbox-worker 才有真 verification_rate)+ ReAct baseline 接线(需 live 迭代)+ 数据集 GT(你审)。gate 全绿(52 tests)。**2026-06-14 更新**:live 栈跑通,small_v1(12)+ **full_v1(40)两套 benchmark 均已干净跑完**(Supervisor 0 错误);报告在 `report/small_v1/` 与 `report/full_v1/`。剩:数据集 GT 待 Haichuan 审 + ReAct baseline 已接线可跑
 
 ### Build — Phase 3：完整 40-repo benchmark + 报告
 
@@ -135,6 +135,17 @@ hard_deadline: 2026-10-15   # OSS v0.5 + 文章
 ## 📝 Daily Logs
 
 > 每个 commit / 每个工作日加一条,倒序(最新在最上)。
+
+### 2026-06-14 — 🏁 full_v1 40 任务跑完(allowlist 修复后,Supervisor 0 错误)
+
+- **症状**:首次 40 任务跑 wayfinder 28/40 报错,全是 HTTP 403。
+- **根因**(非随机崩 / 非超时):我启动 wayfinder 时只放行了 3 个 repo 的 allowlist,另外 7 个 repo 的 28 个任务全被拒。
+- **修复**:用 `WAYFINDER_GITHUB_REPO_ALLOWLIST='*'` 重启 wayfinder,只重跑 wayfinder 那一臂(`--arch wayfinder_supervisor`),靠 `summarize_csv_dir` 与已有的 react CSV 合并 —— 省掉重跑 react 的 ~5M token。
+- **干净结果**(`report/full_v1/`):wayfinder factual 0.563 / verification 0.209 / routing 0.475 / citation 0.373 / **476k tokens**(**0 err**);react factual 0.700 / verification 0.0 / routing 0.0 / citation 0.750 / **4.969M tokens**(4 err)。
+- **headline**:成本 **~10.4×**(476k vs 4.97M);verification 0.21 vs 0.0 仍是架构性赢面(ReAct 同样有 run_pytest 仍 0);factual/citation ReAct 暴力赢,如实写进报告 + 公平性说明(routing/verification 结构性单边,真正 apples-to-apples 的是 factual/citation/cost)。
+- **教训**:跑全量前先确认 wayfinder allowlist = `*`,否则非允许 repo 全 403。沙箱 `ps` 看不到 Mac 上的 benchmark 进程(两套进程空间)—— 查活性要用 osascript 在 Mac 上 `pgrep`。
+- ⚠️ 数据集 GT 仍 pending Haichuan 真实性审查(`datasets/README.md`),发简历数字前必须先审。
+- 图 + EVAL_REPORT + CSV/summary 已落 `report/full_v1/`。
 
 ### 2026-06-14 — 干净 re-run(修好 ReAct pytest 工具后)
 

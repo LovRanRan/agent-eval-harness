@@ -1,0 +1,26 @@
+{
+  "react_baseline": {
+    "tasks": 40,
+    "errors": 4,
+    "metrics": {
+      "citation_grounding": 0.7498,
+      "factual_correctness": 0.7,
+      "routing_accuracy": 0.0,
+      "verification_rate": 0.0
+    },
+    "total_tokens": 4969240,
+    "cost_usd": 0.0
+  },
+  "wayfinder_supervisor": {
+    "tasks": 40,
+    "errors": 0,
+    "metrics": {
+      "citation_grounding": 0.3732,
+      "factual_correctness": 0.5625,
+      "routing_accuracy": 0.475,
+      "verification_rate": 0.2087
+    },
+    "total_tokens": 476215,
+    "cost_usd": 0.0
+  }
+}

@@ -256,3 +256,20 @@
 
 - GitHub Actions for Python â€” https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-python
 - (Pre-build, pending) LangSmith experiments â€” https://docs.smith.langchain.com/evaluation
+
+## full_v1 Ñ 40-task benchmark run (2026-06-14)
+
+### ? Concepts internalized
+- A single-architecture re-run can be merged with a sibling architecture's existing results: `summarize_csv_dir` reads every `<arch>.csv` already in the out-dir and re-aggregates `summary.json`. So when only one arm is broken, re-run just that arm (`--arch wayfinder_supervisor`) and keep the other arm's expensive CSV (~5M tokens of ReAct) untouched.
+- Two of the four metrics (routing_accuracy, verification_rate) are structurally one-sided: only an architecture that HAS a router / verifier can score on them, so ReAct scores 0 by construction, not by losing a fair fight. The honest head-to-head metrics are factual_correctness, citation_grounding, and token cost.
+
+### ?? Gotchas debugged
+- wayfinder returned HTTP 403 on 28/40 tasks. NOT a crash or timeout Ñ the server was launched with an allowlist of only 3 repos, so the other 7 repos' tasks were all refused. Fix: relaunch with `WAYFINDER_GITHUB_REPO_ALLOWLIST='*'`. Lesson: before any full benchmark, confirm the wayfinder allowlist covers every repo in the dataset.
+- The benchmark runs on the Mac, but the Cowork sandbox is a separate process space Ñ `ps`/`pgrep` from the sandbox can't see the Mac process and falsely reported it dead. Check liveness with `pgrep` via osascript ON the Mac, and gauge progress by the output CSV's mtime (the driver writes the CSV only after all 40 tasks finish, so mid-run the CSV looks stale Ñ that's expected, not a hang).
+
+### ? Interview soundbites
+- "On a 40-repo OSS benchmark my multi-agent supervisor matched a ReAct baseline's factual accuracy within ~0.14 while spending ~10x fewer tokens, and was the only system that could verify its claims with real test execution Ñ ReAct had the identical pytest tool and still scored 0 on verification because it has no structured verifier loop."
+- "I keep the comparison honest: routing and verification are structurally one-sided, so I report factual_correctness, citation_grounding and cost as the real apples-to-apples axes Ñ and ReAct actually wins raw answer quality by brute-forcing 10x the tokens."
+
+### ? Sources
+- Run artifacts: `report/full_v1/EVAL_REPORT.md` + summary.json + 4 SVG charts.
