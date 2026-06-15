@@ -1,7 +1,7 @@
 ---
 project: agent-eval-harness
 phase: P3→P4
-status: pre-build  # planning / pre-build / building / shipping / done
+status: shipping  # v0.5 milestone (framework + 10-repo/40-task benchmark, GT vetted); v1.0 = 40 repos × 4 domains
 created: 2026-06-13
 soft_deadline: 2026-09-15   # 40-repo eval study 完整版 ship（Wave 3 简历 v2.0）
 hard_deadline: 2026-10-15   # OSS v0.5 + 文章
@@ -68,14 +68,14 @@ hard_deadline: 2026-10-15   # OSS v0.5 + 文章
 
 |                        |                                                            |
 | ---------------------- | ---------------------------------------------------------- |
-| 当前阶段               | **🏁 首个完整 benchmark 跑通**(Supervisor vs ReAct,12 任务,4 metric,0 错误;report/small_v1)。下一步:修 ReAct pytest 工具 → 干净 re-run / 扩 40-repo |
-| 进度                   | 0 / N acceptance criteria done(脚手架不计 acceptance）     |
-| 完成 commits           | C1–C8 · ReAct baseline · verifier-B · **4 metric 来源全 + benchmark driver/CLI** |
-| Gate 状态              | ✅ ruff / ruff-format / mypy --strict(12 files)/ pytest(64 passed);CI uv-native(`uv sync`+`uv run`) |
-| 🔑 资源状态            | Anthropic key ✅(judge)· OpenAI key ✅(gpt-5.5 可用)· Docker ✅(v29.4.3 daemon up)· wayfinder+project5 ✅ —— **真跑前置全齐** |
-| 软截止                 | 2026-09-15                                                 |
+| 当前阶段               | **🚢 v0.5 ship 中**:framework 完整 + small_v1(12)/full_v1(40)两份**公平且 GT 已审**的报告。下一步(v1.0):扩 40 repo × 4 领域 + cloud re-run + mkdocs |
+| 进度                   | 核心 acceptance 大部分达成(4 metric / 双跑 / 4 图 / EVAL_REPORT / headline / self-consistency / GT 审)；**未达**:40-repo×4-领域(现 10 repo/40 task)、iteration round 2 cloud re-run、OSS v1.0 docs |
+| 完成 commits           | C0–C8 · ReAct baseline · verifier-B · 4 metric · benchmark/CLI · **citation resolver 修复 · 离线 rescore + 逐任务进度 · small/full 公平报告(GT 审)** |
+| Gate 状态              | ✅ ruff / ruff-format / mypy --strict(13 files)/ pytest(**73 passed**);CI uv-native(`uv sync`+`uv run`) |
+| 🔑 资源状态            | Anthropic key ✅(judge)· OpenAI key ✅(gpt-5.5)· wayfinder+project5 ✅ · live stack 已验证可起停 |
+| 软截止                 | 2026-09-15(v1.0 全 40-repo)                               |
 | 硬截止                 | 2026-10-15                                                 |
-| **Today's North Star** | ⬜ 待你手填(建议:写 Commit 1 eval-API design note —— datasets/runner/metric/judge schema) |
+| **Today's North Star** | ⬜ 待你手填(建议:决定 v0.5 现在 ship 还是先扩 40-repo;若 ship,填简历差异化字段) |
 
 ---
 
