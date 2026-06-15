@@ -98,8 +98,8 @@ test-backed verification" — not "beats ReAct on everything".
 
 - **Single-seed agent runs** (one agent run per task; self-consistency applies to
   the *judge*, not the agents). Treat numbers as directional.
-- **Ground truth pending Haichuan truthfulness review** (see `datasets/README.md`);
-  no number here is resume-publishable until vetted.
+- **Ground truth reviewed and approved** (Haichuan, 2026-06-15; see
+  `datasets/README.md`) — numbers are vetted and cleared for publication.
 - **factual_correctness favors ReAct** (0.71 vs 0.59): brute-force exploration
   produces more complete answers per the judge. This is the Supervisor's real weak
   axis, not cost or verification.

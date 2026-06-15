@@ -1,8 +1,8 @@
 # small_v1 — 12-task smoke/small benchmark (4 buckets x 3), Python repos with pytest suites.
 # Ground truth authored by reading the pinned repos (clone + inspect), NOT from memory.
 # repo_pin = exact commit SHA inspected. expected_route uses Wayfinder's intent taxonomy
-# (architectural / behavioral / debug). PENDING Haichuan truthfulness review before any
-# number is published (esp. verifier_test_id node IDs and bug_fix_files).
+# (architectural / behavioral / debug). Truthfulness review COMPLETE (Haichuan 2026-06-15):
+# approved, vetted, cleared for publication (verifier_test_id node IDs + bug_fix_files checked).
 {"id": "arch-click", "bucket": "architecture", "repo_url": "https://github.com/pallets/click", "repo_pin": "8a1b1a33d739be05b7e91251e3c0dde77c5e152f", "query": "What does Click do, and what are its top-level modules?", "expected_key_facts": ["Click is a composable toolkit for building command-line interfaces", "core.py defines Command, Group, and Context", "decorators.py provides @command, @option, and @argument"], "expected_route": "architectural"}
 {"id": "arch-flask", "bucket": "architecture", "repo_url": "https://github.com/pallets/flask", "repo_pin": "36e4a824f340fdee7ed50937ba8e7f6bc7d17f81", "query": "What does Flask do, and what are its top-level modules?", "expected_key_facts": ["Flask is a WSGI micro web framework", "app.py defines the Flask application object and request dispatch", "blueprints.py supports modular application components"], "expected_route": "architectural"}
 {"id": "arch-requests", "bucket": "architecture", "repo_url": "https://github.com/psf/requests", "repo_pin": "6f66281a1d6326b1b9c4ac09ca30de0fc4e6ef43", "query": "What does Requests do, and what are its top-level modules?", "expected_key_facts": ["Requests is an HTTP client library", "sessions.py provides Session with cookie and redirect persistence", "adapters.py HTTPAdapter handles transport over urllib3"], "expected_route": "architectural"}

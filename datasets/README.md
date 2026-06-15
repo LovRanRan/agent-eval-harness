@@ -20,10 +20,10 @@ pinned commit (`repo_pin`) and reading the source/tests — not from memory. Eac
 `bug_fix_files` path was confirmed to exist. `expected_route` uses Wayfinder's
 intent taxonomy (`architectural` / `behavioral` / `debug`).
 
-> ⚠️ **Pending Haichuan truthfulness review** before any number from this set is
-> published (per project rule: resume numbers must be vetted). Review focus:
-> the three `claim_verification` expected verdicts and the `bug_localization`
-> suspect modules.
+> ✅ **Truthfulness review complete (Haichuan, 2026-06-15): approved, no issues.**
+> Ground truth is vetted — including the three `claim_verification` expected
+> verdicts and the `bug_localization` suspect modules. Numbers from this set are
+> cleared for publication.
 
 ## `full_v1.jsonl` — 40-task benchmark (4 buckets × 10, 10 repos)
 
@@ -32,7 +32,7 @@ suites: click, flask, requests, httpx, rich, jinja, werkzeug, starlette,
 itsdangerous, gunicorn. Ground truth authored by reading each repo at its pinned
 SHA (module structure, located functions, real test node IDs).
 
-> ⚠️ **Pending Haichuan truthfulness review** before publishing any number — in
-> particular the `claim_verification` key facts + the function-tracing "what calls
-> it" claims for the 7 newly-added repos (architecture + bug-localization GT is from
-> verified module structure and is higher-confidence).
+> ✅ **Truthfulness review complete (Haichuan, 2026-06-15): approved, no issues.**
+> The `claim_verification` key facts and the function-tracing "what calls it" claims
+> for the 7 newer repos were vetted along with the rest. Numbers are cleared for
+> publication.

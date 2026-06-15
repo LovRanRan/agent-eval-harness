@@ -144,7 +144,7 @@ hard_deadline: 2026-10-15   # OSS v0.5 + 文章
 - **诚实定位**:factual 是 wayfinder 真短板(0.48 vs 0.70,难集上更宽);citation 打平偏弱不幻觉;赢面=成本 12× + 0 错误 + 路由/验证(后两者结构性)。
 - **成本真相**:今晚 OpenAI 实扣 ~$31(auto-recharge 真金白银,非免费 credit),几乎全是 ReAct 烧的——账单本身印证 12× 成本差。judge(Claude)便宜且对比中抵消。
 - **prompt 决策**:wayfinder synthesizer prompt 改动效果主要被 resolver 覆盖、且略伤 factual → 已 `git stash`(未提交),committed 代码数字更好。
-- **owed / 待办**:① ~~harness 加「持久化答案 → 离线重打分」+ 逐任务进度日志~~ ✅ 已做(见下);② 数据集 GT 待 Haichuan 审才能上简历。
+- **owed / 待办**:① ~~harness 加「持久化答案 → 离线重打分」+ 逐任务进度日志~~ ✅ 已做(见下);② ~~数据集 GT 待 Haichuan 审~~ ✅ **2026-06-15 审核通过、无问题,数字已 cleared,可上简历**(README/两个 jsonl header/两份报告 caveat 均已更新)。
 
 ### 2026-06-15 — feat:离线重打分 + 逐任务进度(省钱基建)
 

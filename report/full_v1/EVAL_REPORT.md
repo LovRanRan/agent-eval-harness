@@ -94,9 +94,9 @@ the comparison. The ~12× token ratio is the headline.
 ## Caveats / limitations (honest)
 
 - **Single-seed agent runs**; self-consistency applies to the judge, not the agents.
-- **Ground truth pending Haichuan truthfulness review** (see `datasets/README.md`) —
-  especially the function-tracing "what calls it" claims for the 7 newer repos. No
-  number is resume-publishable until vetted.
+- **Ground truth reviewed and approved** (Haichuan, 2026-06-15; see
+  `datasets/README.md`) — including the function-tracing "what calls it" claims for
+  the 7 newer repos. Numbers are vetted and cleared for publication.
 - **factual_correctness favors ReAct** (0.70 vs 0.48) — the Supervisor's real weak
   axis, and the gap widened on this harder set.
 - **ReAct's 0.70 factual / 0.88 citation are over the 34 tasks it finished**; its 6
