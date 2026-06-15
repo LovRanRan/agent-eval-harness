@@ -58,6 +58,28 @@ def test_repo_symbol_resolver_finds_defs_and_files(tmp_path: Path) -> None:
     assert resolver(task, "ghost_function") is False  # hallucinated -> ungrounded
 
 
+def test_repo_symbol_resolver_grounds_real_attribute_references(tmp_path: Path) -> None:
+    repo_url = "https://github.com/acme/widget"
+    repo_dir = tmp_path / default_repo_slug(repo_url)
+    (repo_dir / "pkg").mkdir(parents=True)
+    (repo_dir / "pkg" / "core.py").write_text(
+        "class Command:\n"
+        "    def __init__(self, callback):\n"
+        "        self.callback = callback\n"
+        "    def invoke(self, ctx):\n"
+        "        return ctx.invoke(self.callback, **ctx.params)\n",
+        encoding="utf-8",
+    )
+    resolver = RepoSymbolResolver([tmp_path])
+    task = _task(repo_url)
+    # attribute references that actually occur in the code are grounded
+    assert resolver(task, "self.callback") is True
+    assert resolver(task, "ctx.params") is True
+    assert resolver(task, "Command.invoke") is True  # def invoke
+    # an invented attribute never appears as `.<name>` -> still ungrounded
+    assert resolver(task, "self.frobnicate") is False
+
+
 def test_repo_symbol_resolver_false_when_clone_missing(tmp_path: Path) -> None:
     resolver = RepoSymbolResolver([tmp_path])
     assert resolver(_task("https://github.com/none/here"), "anything") is False

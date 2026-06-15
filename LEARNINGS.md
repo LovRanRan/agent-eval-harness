@@ -272,4 +272,22 @@
 - "I keep the comparison honest: routing and verification are structurally one-sided, so I report factual_correctness, citation_grounding and cost as the real apples-to-apples axes Ñ and ReAct actually wins raw answer quality by brute-forcing 10x the tokens."
 
 ### ? Sources
-- Run artifacts: `report/full_v1/EVAL_REPORT.md` + summary.json + 4 SVG charts.
+- Run artifacts: `report/full_v1/EVAL_REPORT.md` + summary.json + 4 SVG charts
+
+## citation metric fix Ñ resolver wrongly penalized real attribute refs (2026-06-15)
+
+### ? Concepts internalized
+- A grounding metric is only as fair as its resolver. `citation_grounding` checks whether each cited symbol exists in the repo, but the resolver originally recognized only top-level `def`/`class` names Ñ so legitimate attribute/method references like `self.callback` or `ctx.params` were scored as ungrounded (i.e. treated like hallucinations). An agent that writes more concrete, attribute-level citations was therefore penalized for being more specific.
+- Isolating cause with a 3-cell sweep beats a single before/after: old-resolver+old-prompt 0.373, old-resolver+new-prompt 0.252, new-resolver+new-prompt 0.813. The drop at cell 2 is what exposed the metric bug Ñ the prompt made answers MORE concrete yet citation FELL, which only makes sense if the scorer was wrong.
+
+### ?? Gotchas debugged
+- Don't attribute a metric move to the change you intended. The citation jump to 0.81 was the resolver fix, not the prompt Ñ the prompt alone lowered the score. Reporting 'my prompt fixed citation' would have been false.
+- A more lenient resolver lifts ALL architectures, so you cannot compare a re-scored arm against an arm scored under the old resolver. Re-scoring requires the agent's stored answers; the harness only persisted metrics, so the ReAct arm has to be re-run to compare fairly. Lesson for the harness: persist raw answers so metrics can be recomputed offline without paying for another agent run.
+- wayfinder live stack: every operational env var needs the `WAYFINDER_` prefix (`WAYFINDER_ENTRY_SCANNER`, `WAYFINDER_FINAL_WRITER`, `WAYFINDER_ENABLE_GITHUB_INGESTION`, ...). Unprefixed names are silently ignored Ñ scanners fall back to placeholder and `/explain` returns a deterministic stub, or GitHub ingestion stays off and `/explain` 403s.
+
+### ? Interview soundbites
+- "While validating a fix I found a bug in my own eval metric: the citation resolver only credited top-level def/class names, so real attribute references scored as hallucinations. I fixed the resolver, added a regression test, and re-measured Ñ the system's citation grounding went from 0.37 to 0.81, which showed the low score was a measurement artifact, not the agent hallucinating."
+- "I'm careful to attribute metric movements to the right cause: a three-cell sweep showed the gain came from the resolver fix, not the prompt change I'd made Ñ so I didn't claim credit the prompt didn't earn."
+
+### ? Sources
+- Run artifacts: runs/small_v1_symfix (old resolver+new prompt), runs/small_v1_symfix2 (fixed resolver+new prompt).

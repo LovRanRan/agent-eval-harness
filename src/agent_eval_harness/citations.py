@@ -89,11 +89,20 @@ class RepoSymbolResolver:
         name = symbol.split(".")[-1]
         if not _IDENT.match(name):
             return False
-        pattern = re.compile(rf"^\s*(?:async\s+def|def|class)\s+{re.escape(name)}\b", re.MULTILINE)
+        def_pat = re.compile(rf"^\s*(?:async\s+def|def|class)\s+{re.escape(name)}\b", re.MULTILINE)
+        # A dotted reference (e.g. `self.callback`, `ctx.params`) is grounded if the
+        # attribute is actually accessed somewhere in the repo, not only when its
+        # final component is a top-level def/class. Without this, real attribute and
+        # method references are wrongly scored as hallucinated. Anti-hallucination is
+        # preserved: an invented attribute never appears as `.<name>` in the code.
+        attr_pat = re.compile(rf"\.{re.escape(name)}\b") if "." in symbol else None
         for path in list(repo_dir.rglob("*.py"))[:2000]:
             try:
-                if pattern.search(path.read_text(encoding="utf-8", errors="ignore")):
-                    return True
+                text = path.read_text(encoding="utf-8", errors="ignore")
             except OSError:
                 continue
+            if def_pat.search(text):
+                return True
+            if attr_pat is not None and attr_pat.search(text):
+                return True
         return False

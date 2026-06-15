@@ -70,6 +70,15 @@ intent labels differ from the dataset's expected route there). ReAct scores 0
 structurally (no router), so routing_accuracy is a Supervisor-internal signal, not
 a fair head-to-head.
 
+> ⚠️ **citation_grounding under revision (2026-06-15).** The resolver used for these
+> numbers only credited top-level `def`/`class` names and scored real attribute /
+> method references (`self.callback`, `ctx.params`) as ungrounded. It has since been
+> fixed to credit attribute references that actually occur in the repo. Under the
+> fixed resolver, wayfinder's small_v1 citation rose 0.37 → 0.81 (it was not
+> hallucinating — the old score was a measurement artifact). The ReAct arm must be
+> re-scored under the fixed resolver before the citation comparison below is fair;
+> treat the citation row as provisional until then.
+
 ## Caveats / limitations (honest)
 
 - **Single-seed agent runs** (one agent run per task; self-consistency applies to

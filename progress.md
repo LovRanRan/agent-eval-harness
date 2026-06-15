@@ -136,6 +136,18 @@ hard_deadline: 2026-10-15   # OSS v0.5 + 文章
 
 > 每个 commit / 每个工作日加一条,倒序(最新在最上)。
 
+### 2026-06-15 — citation metric 缺陷发现 + 修复(resolver 误判真实属性引用)
+
+- **动机**:David 问"wayfinder citation 0.37 是真弱还是嘴笨"。同模型(gpt-5.5)下 ReAct citation 0.75,怀疑是 wayfinder synthesizer 不点名符号。
+- **实验**:改 wayfinder synthesizer prompt 强制点名具体符号 → 同 stack 重跑 small_v1 wayfinder 臂。
+- **关键转折**:光改 prompt(旧 resolver)citation 反而掉到 **0.252**;查原因 = **`RepoSymbolResolver` 只认 `def`/`class` 顶层定义名,把 `self.callback`/`ctx.params` 这类真实属性/方法引用全判成"未落地"**。新答案点名更多属性引用 → 反被扣分。这是 **eval metric 自身的缺陷**,不是 wayfinder 幻觉。
+- **修复**(`citations.py` `RepoSymbolResolver.__call__`):dotted 引用除 def/class 外,若该属性 `.<name>` 在 repo 里真实出现也算 grounded(反幻觉仍保留——编造的属性不会出现)。加回归测试 `test_repo_symbol_resolver_grounds_real_attribute_references`(self.callback/ctx.params=True,self.frobnicate=False)。gate 全绿(ruff/format/mypy --strict/pytest 5 passed)。
+- **三轮对照(small_v1,wayfinder,n=12)**:旧 resolver+旧 prompt **citation 0.373** / 旧 resolver+新 prompt **0.252** / **新 resolver+新 prompt 0.813**;factual 0.582→0.539→0.510(噪声内);routing/verification 不变。
+- **结论(诚实)**:① wayfinder **不幻觉**——公平打分下 81% 引用对应 repo 真实代码,0.37 是测量假象;② citation 0.81 主要是 resolver 功劳不是 prompt;③ **不能**说 citation 反超 ReAct——同样宽松的 resolver 用到 ReAct 上它也会涨,ReAct 答案没存需重跑才能公平对比。
+- **影响已提交报告**:`report/full_v1/` 的 citation 0.37 vs 0.75 是旧(严格)resolver 打的,已知不公平,加了 caveat,待用新 resolver 重跑 ReAct 后修订。
+- **决策**:resolver 修复(harness 资产)提交;wayfinder prompt 改动 hold(占 architecture ownership,没动 factual,留待 Haichuan 反向讲解时定)。
+- **教训**:live stack 启动配方所有运营变量需 `WAYFINDER_` 前缀(progress.md 旧配方少前缀导致 scanner 退化成 placeholder + LLM writer 没启用);`WAYFINDER_ENABLE_GITHUB_INGESTION=1` 才放行 GitHub(否则 /explain 403)。
+
 ### 2026-06-14 — 🏁 full_v1 40 任务跑完(allowlist 修复后,Supervisor 0 错误)
 
 - **症状**:首次 40 任务跑 wayfinder 28/40 报错,全是 HTTP 403。
