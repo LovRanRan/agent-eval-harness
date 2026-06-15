@@ -9,6 +9,9 @@ with a fake runner.
 from __future__ import annotations
 
 import csv
+import os
+import sys
+import time
 from collections.abc import Sequence
 from dataclasses import dataclass
 from pathlib import Path
@@ -16,6 +19,15 @@ from pathlib import Path
 from agent_eval_harness.datasets import Bucket, Task
 from agent_eval_harness.metric import Metric
 from agent_eval_harness.runner import Runner
+
+
+def _progress_enabled() -> bool:
+    """Per-task progress goes to stderr only when AGENT_EVAL_PROGRESS is truthy.
+
+    Off by default so unit tests stay silent; the CLI/benchmark turn it on.
+    """
+    return os.environ.get("AGENT_EVAL_PROGRESS", "").strip().lower() in {"1", "true", "yes", "on"}
+
 
 _BASE_FIELDS = ("task_id", "bucket", "arch")
 _TAIL_FIELDS = ("tokens", "cost_usd", "latency_s", "error")
@@ -38,13 +50,26 @@ class EvalRow:
 def evaluate(tasks: Sequence[Task], runner: Runner, metrics: Sequence[Metric]) -> list[EvalRow]:
     """Run `runner` over `tasks`, scoring each successful result with `metrics`."""
     rows: list[EvalRow] = []
-    for task in tasks:
+    total = len(tasks)
+    show_progress = _progress_enabled()
+    started = time.monotonic()
+    for index, task in enumerate(tasks, start=1):
         result = runner.run(task)
         scores = (
             {}
             if result.error is not None
             else {m.name: m.score(task, result).value for m in metrics}
         )
+        if show_progress:
+            status = "ERR" if result.error is not None else "ok"
+            elapsed = time.monotonic() - started
+            print(
+                f"[{index}/{total}] {runner.arch} · {task.id} · {task.bucket} · "
+                f"{status} · {result.tokens} tok · {result.latency_s:.1f}s "
+                f"(elapsed {elapsed:.0f}s)",
+                file=sys.stderr,
+                flush=True,
+            )
         rows.append(
             EvalRow(
                 task_id=task.id,

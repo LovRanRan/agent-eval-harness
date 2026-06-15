@@ -38,6 +38,22 @@ def _task(route: str = "architecture") -> Task:
     )
 
 
+def test_evaluate_emits_progress_to_stderr_when_enabled(capsys, monkeypatch) -> None:  # type: ignore[no-untyped-def]
+    result = RunResult(task_id="t1", arch="wayfinder_supervisor", answer="a", route_taken="x")
+    monkeypatch.setenv("AGENT_EVAL_PROGRESS", "1")
+    evaluate([_task()], FakeRunner(result), [RoutingAccuracy()])
+    captured = capsys.readouterr()
+    assert captured.out == ""  # CSV stdout stays clean
+    assert "[1/1]" in captured.err and "wayfinder_supervisor" in captured.err
+
+
+def test_evaluate_silent_by_default(capsys) -> None:  # type: ignore[no-untyped-def]
+    result = RunResult(task_id="t1", arch="wayfinder_supervisor", answer="a", route_taken="x")
+    evaluate([_task()], FakeRunner(result), [RoutingAccuracy()])
+    captured = capsys.readouterr()
+    assert captured.err == ""
+
+
 def test_evaluate_scores_successful_run() -> None:
     result = RunResult(
         task_id="t1", arch="wayfinder_supervisor", answer="a", route_taken="architecture"
