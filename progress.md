@@ -1,7 +1,7 @@
 ---
 project: agent-eval-harness
 phase: P3→P4
-status: shipping  # v0.5 milestone (framework + 10-repo/40-task benchmark, GT vetted); v1.0 = 40 repos × 4 domains
+status: shipped  # v0.5 SHIPPED 2026-06-15 (framework + 10-repo/40-task benchmark, GT vetted); v1.0 = 40 repos × 4 domains
 created: 2026-06-13
 soft_deadline: 2026-09-15   # 40-repo eval study 完整版 ship（Wave 3 简历 v2.0）
 hard_deadline: 2026-10-15   # OSS v0.5 + 文章
@@ -31,11 +31,15 @@ hard_deadline: 2026-10-15   # OSS v0.5 + 文章
 
 **项目领域**
 
-> ⬜ 待你手填(例如:"AI/devtools agent 的评测方法论 + codebase-understanding benchmark")。
+AI/agent **评测方法论** + codebase-understanding **benchmark**(devtools / AI infra 方向)。不是又一个 RAG/chatbot,而是"如何严谨地量化 agent 质量"这一层——给面试官 99% new grad 拿不出的 rigorous eval 数据。
 
 **简历差异化**
 
-> ⬜ 待你手填(3–5 条,本框架比 generic eval 强在哪;参考:verification_rate 量化反幻觉、自评 wayfinder、开源可复用)。
+1. **`verification_rate` 指标** —— 多数 eval 套件没有的维度:量化"用真实 pytest 执行背书的 claim 占比",反幻觉做到 citation 之外的执行级。
+2. **自评 + 诚实** —— 用本框架评测**自己的** wayfinder vs ReAct 基线(同 model 同 tools),并如实报告己方输的轴(factual 0.48 vs 0.70),不挑赢的说。
+3. **连自己的 metric 偏差都能 catch + fix** —— 分析中途发现 citation resolver 把真实属性引用误判成幻觉,修复 + 加回归测试 + 三格 sweep 把功劳归对(是 resolver 不是 prompt)。这是 eval-engineer 的成熟度信号。
+4. **成本/可靠性是一等公民** —— 量出 ~12× token 差 + ReAct 15% 不收敛失败;run/score 解耦 + 持久化答案离线重打分,改 metric 不重跑烧钱。
+5. **开源可复用框架**(datasets/runners/metrics/judge/CLI),不是一次性脚本。
 
 **跨项目衔接**
 
@@ -44,16 +48,19 @@ hard_deadline: 2026-10-15   # OSS v0.5 + 文章
 
 **成功判定**
 
-- [ ]  `final_checklist.md` Project 7 acceptance 全部 `[x]`
-- [ ]  GitHub 仓库公开 + OSS v0.5(docs/tests/examples)
-- [ ]  `EVAL_REPORT.md` + 4 SVG 图 + 一句话 headline number
-- [ ]  `TASKS.md` Project 7 ship 行 `[x]`
+- [/] `final_checklist.md` Project 7 acceptance —— **v0.5 核心达成**(4 metric / 双跑 / 4 图 / EVAL_REPORT / headline / self-consistency / GT 审);**v1.0 未达**:40-repo×4 领域(现 10 repo/40 task)、iteration 2 cloud re-run
+- [x] GitHub 仓库公开 + OSS v0.5(README quickstart + 73 tests;datasets/reports 即 examples;mkdocs 留 v1.0)
+- [x] `EVAL_REPORT.md` + 4 SVG 图 + 一句话 headline number(small_v1 + full_v1,GT 已审)
+- [x] `TASKS.md` Project 7 ship 行 `[x]`(v0.5 milestone)
 
 ---
 
 ## 🔒 Core Principles
 
-> ⬜ 待你手填(项目级硬规则;参考方向:① 评测先于自夸——任何 headline number 必须可复现;② golden set + LLM-judge 双轨,judge bias 要显式控制;③ 成本透明,每个 metric 标 run 数/花费)。
+1. **评测先于自夸** —— 任何 headline number 必须可复现,且 ground truth 审过(Haichuan vet)才公开/上简历。
+2. **公平先于好看** —— 同 model 同 tools;明确区分"结构性单边指标"(routing/verification,对手天生 0 分)与"真正对比轴"(factual/citation/cost);如实报告己方输的轴。
+3. **metric 本身也是被测对象** —— 指标偏差要能被发现、修复并加回归测试;run/score 解耦,改 metric 用 `rescore` 离线重算,不重跑 agent 烧钱。
+4. **成本透明** —— 每个数字标 run 数;token 用相对倍数表达,不夸大绝对美元;judge 是评测开销、对比中抵消,与系统成本分开记。
 
 ---
 
@@ -68,14 +75,14 @@ hard_deadline: 2026-10-15   # OSS v0.5 + 文章
 
 |                        |                                                            |
 | ---------------------- | ---------------------------------------------------------- |
-| 当前阶段               | **🚢 v0.5 ship 中**:framework 完整 + small_v1(12)/full_v1(40)两份**公平且 GT 已审**的报告。下一步(v1.0):扩 40 repo × 4 领域 + cloud re-run + mkdocs |
+| 当前阶段               | **✅ v0.5 SHIPPED 2026-06-15**:framework 完整 + small_v1(12)/full_v1(40)两份**公平且 GT 已审**的报告。下一步(v1.0):扩 40 repo × 4 领域 + cloud re-run + mkdocs |
 | 进度                   | 核心 acceptance 大部分达成(4 metric / 双跑 / 4 图 / EVAL_REPORT / headline / self-consistency / GT 审)；**未达**:40-repo×4-领域(现 10 repo/40 task)、iteration round 2 cloud re-run、OSS v1.0 docs |
 | 完成 commits           | C0–C8 · ReAct baseline · verifier-B · 4 metric · benchmark/CLI · **citation resolver 修复 · 离线 rescore + 逐任务进度 · small/full 公平报告(GT 审)** |
 | Gate 状态              | ✅ ruff / ruff-format / mypy --strict(13 files)/ pytest(**73 passed**);CI uv-native(`uv sync`+`uv run`) |
 | 🔑 资源状态            | Anthropic key ✅(judge)· OpenAI key ✅(gpt-5.5)· wayfinder+project5 ✅ · live stack 已验证可起停 |
 | 软截止                 | 2026-09-15(v1.0 全 40-repo)                               |
 | 硬截止                 | 2026-10-15                                                 |
-| **Today's North Star** | ⬜ 待你手填(建议:决定 v0.5 现在 ship 还是先扩 40-repo;若 ship,填简历差异化字段) |
+| **Today's North Star** | ✅ v0.5 SHIPPED。下一步:把 headline number 回填进 wayfinder 简历 bullet + 起第 1 篇技术文章("Supervisor vs ReAct on OSS repos");v1.0(40-repo×4 领域)排 9-15 软截止前 |
 
 ---
 
@@ -145,6 +152,15 @@ hard_deadline: 2026-10-15   # OSS v0.5 + 文章
 - **成本真相**:今晚 OpenAI 实扣 ~$31(auto-recharge 真金白银,非免费 credit),几乎全是 ReAct 烧的——账单本身印证 12× 成本差。judge(Claude)便宜且对比中抵消。
 - **prompt 决策**:wayfinder synthesizer prompt 改动效果主要被 resolver 覆盖、且略伤 factual → 已 `git stash`(未提交),committed 代码数字更好。
 - **owed / 待办**:① ~~harness 加「持久化答案 → 离线重打分」+ 逐任务进度日志~~ ✅ 已做(见下);② ~~数据集 GT 待 Haichuan 审~~ ✅ **2026-06-15 审核通过、无问题,数字已 cleared,可上简历**(README/两个 jsonl header/两份报告 caveat 均已更新)。
+
+### 2026-06-15 — 🚢 v0.5 SHIPPED
+
+- **决定**(David 授权):按 **v0.5 里程碑 ship**,不等 40-repo 扩展。理由:简历数字已硬(公平 + GT 审),40-repo×4 领域是 v1.0 增量(软截止 9-15),先 ship 喂 wayfinder bullet。
+- **达成**:framework 完整(datasets/runner/metric/judge/CLI/rescore,gate 绿 73 tests)+ small_v1(12)/full_v1(40)两份公平且 GT 已审报告 + 4 SVG + headline number + README OSS 打磨。
+- **诚实未达(列入 v1.0)**:40-repo×4 领域(现 10 repo/40 task,偏 web/CLI)、iteration 2 cloud re-run、mkdocs + 更多 integration examples。
+- **填了 4 个手填字段**:项目领域 / 简历差异化(5 条)/ Core Principles(4 条)/ Today's North Star —— 见上方 Project Description + Core Principles。
+- **同步**:status→shipped、Dashboard、成功判定、TASKS.md ship 行 [x]、projects-retro.md(P7 段)、CLAUDE.md §8。
+- **下一步**:headline number 回填 wayfinder 简历 bullet + 第 1 篇技术文章;v1.0 扩 40-repo 排软截止前。
 
 ### 2026-06-15 — feat:离线重打分 + 逐任务进度(省钱基建)
 
