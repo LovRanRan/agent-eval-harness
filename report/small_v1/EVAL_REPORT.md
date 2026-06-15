@@ -104,9 +104,14 @@ test-backed verification" — not "beats ReAct on everything".
   produces more complete answers per the judge. This is the Supervisor's real weak
   axis, not cost or verification.
 - **1 ReAct task errored** (excluded from its metric means; counted in token total).
-- **cost in USD not computed** (`cost_usd = 0`); tokens are the comparable. Observed
-  real spend for the whole experiment was ~US$3 (Anthropic judge + OpenAI agents),
-  so the ~14.6× ratio is the headline, not the absolute dollars.
+- **cost in USD not computed** (`cost_usd = 0`); the token column is **agent-only**
+  (gpt-5.5) and is the comparable. The two arms' agent spend is the OpenAI side
+  (~US$1.5 for all runs). The **LLM-as-judge (Claude) is evaluation overhead, not
+  either system's runtime cost** — and with `self-consistency = 3` it grades every
+  task three times, so across all the runs in this experiment it is the dominant
+  line item (it accounts for most of the month's Anthropic budget). Crucially it is
+  identical per task for both arms, so it **cancels out of the wayfinder-vs-ReAct
+  comparison**: the ~14.6× token ratio is agent-side and unaffected by judge cost.
 
 ## Reproduce
 
