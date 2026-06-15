@@ -1,0 +1,13 @@
+task_id,bucket,arch,citation_grounding,factual_correctness,routing_accuracy,verification_rate,tokens,cost_usd,latency_s,error
+arch-click,architecture,wayfinder_supervisor,0.0,0.85,1.0,0.0,6384,0.0,14.5283,
+arch-flask,architecture,wayfinder_supervisor,0.4,0.7833333333333333,1.0,0.0,9474,0.0,16.4553,
+arch-requests,architecture,wayfinder_supervisor,0.09090909090909091,0.9,1.0,0.0,4748,0.0,14.0595,
+trace-flask-dispatch,function_tracing,wayfinder_supervisor,0.6923076923076923,0.5,1.0,0.75,9743,0.0,28.0674,
+trace-requests-rebuild-auth,function_tracing,wayfinder_supervisor,0.6363636363636364,0.6999999999999998,1.0,0.75,5890,0.0,24.1063,
+trace-click-invoke,function_tracing,wayfinder_supervisor,0.7142857142857143,1.0,1.0,0.75,7218,0.0,36.1055,
+claim-requests-auth-strip,claim_verification,wayfinder_supervisor,0.2,0.0,0.0,0.0,4671,0.0,10.0353,
+claim-requests-fragment,claim_verification,wayfinder_supervisor,0.16666666666666666,0.0,0.0,0.0,4711,0.0,10.0633,
+claim-requests-cookie-redirect,claim_verification,wayfinder_supervisor,0.16666666666666666,0.10000000000000002,0.0,0.0,4614,0.0,8.0195,
+bug-requests-auth-redirect,bug_localization,wayfinder_supervisor,0.4,0.85,0.0,0.0,4667,0.0,14.0448,
+bug-flask-session,bug_localization,wayfinder_supervisor,0.6923076923076923,0.85,0.0,0.0,8880,0.0,8.0374,
+bug-click-default,bug_localization,wayfinder_supervisor,0.3076923076923077,0.85,0.0,0.0,6243,0.0,14.0506,

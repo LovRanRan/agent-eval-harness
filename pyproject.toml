@@ -24,6 +24,10 @@ react = [
   "langchain-openai>=0.2.0",
   "langchain-mcp-adapters>=0.1.0",
 ]
+# Chart generation for EVAL_REPORT (scripts/make_charts.py).
+report = [
+  "matplotlib>=3.8.0",
+]
 dev = [
   "httpx>=0.27.0",
   "mypy>=1.13.0",

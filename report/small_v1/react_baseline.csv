@@ -1,0 +1,13 @@
+task_id,bucket,arch,citation_grounding,factual_correctness,routing_accuracy,verification_rate,tokens,cost_usd,latency_s,error
+arch-click,architecture,react_baseline,0.28,1.0,0.0,0.0,80242,0.0,124.9723,
+arch-flask,architecture,react_baseline,0.96,1.0,0.0,0.0,121570,0.0,82.8207,
+arch-requests,architecture,react_baseline,0.047619047619047616,1.0,0.0,0.0,82402,0.0,71.8336,
+trace-flask-dispatch,function_tracing,react_baseline,0.782608695652174,0.9,0.0,0.0,33904,0.0,109.7669,
+trace-requests-rebuild-auth,function_tracing,react_baseline,0.6521739130434783,1.0,0.0,0.0,97575,0.0,94.2407,
+trace-click-invoke,function_tracing,react_baseline,0.9166666666666666,1.0,0.0,0.0,70892,0.0,149.6843,
+claim-requests-auth-strip,claim_verification,react_baseline,1.0,0.0,0.0,0.0,13435,0.0,17.8687,
+claim-requests-fragment,claim_verification,react_baseline,1.0,0.0,0.0,0.0,19893,0.0,23.9345,
+claim-requests-cookie-redirect,claim_verification,react_baseline,1.0,0.0,0.0,0.0,13515,0.0,14.2994,
+bug-requests-auth-redirect,bug_localization,react_baseline,0.625,1.0,0.0,0.0,31707,0.0,41.7871,
+bug-flask-session,bug_localization,react_baseline,0.9166666666666666,1.0,0.0,0.0,181161,0.0,191.5049,
+bug-click-default,bug_localization,react_baseline,0.7272727272727273,0.85,0.0,0.0,138544,0.0,163.2051,

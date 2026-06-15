@@ -68,7 +68,7 @@ hard_deadline: 2026-10-15   # OSS v0.5 + 文章
 
 |                        |                                                            |
 | ---------------------- | ---------------------------------------------------------- |
-| 当前阶段               | **Building — Phase 1 完成**(最小可跑框架 C1–C6 全绿);下一步 = Phase 2 数据集策划/真跑(需 API key + wayfinder) |
+| 当前阶段               | **🏁 首个完整 benchmark 跑通**(Supervisor vs ReAct,12 任务,4 metric,0 错误;report/small_v1)。下一步:修 ReAct pytest 工具 → 干净 re-run / 扩 40-repo |
 | 进度                   | 0 / N acceptance criteria done(脚手架不计 acceptance）     |
 | 完成 commits           | C1–C8 · ReAct baseline · verifier-B · **4 metric 来源全 + benchmark driver/CLI** |
 | Gate 状态              | ✅ ruff / ruff-format / mypy --strict(12 files)/ pytest(64 passed);CI uv-native(`uv sync`+`uv run`) |
@@ -135,6 +135,14 @@ hard_deadline: 2026-10-15   # OSS v0.5 + 文章
 ## 📝 Daily Logs
 
 > 每个 commit / 每个工作日加一条,倒序(最新在最上)。
+
+### 2026-06-14 — 🏁 首次真跑完成(Supervisor vs ReAct,12 任务,0 错误)
+
+- **结果**(`report/small_v1/`):wayfinder factual 0.615 / verification 0.188 / routing 0.50 / citation 0.372 / **77.2k tokens**;react factual 0.729 / verification 0.0 / routing 0.0 / citation 0.742 / **884.8k tokens**。
+- **Headline(诚实)**:Supervisor 用 **~11× 更少 token**(77k vs 885k)达到与 ReAct **相当的 factual accuracy**(0.62 vs 0.73,略低),且**唯一**有真实测试执行验证(verification 0.19 vs 0)。ReAct 靠暴力探索拿到更高 factual/citation,但 11× 成本。
+- **诚实 caveat**:① ReAct 的 `run_pytest` 工具本次坏了(pytest 不在 mcp-test-runner PATH)→ 重试拉高 token + 压低其 verification,所以 11× 成本差有部分是 bug 造成,re-run 前要修;② 小样本单 seed(12 任务,agent 每任务 1 跑,self-consistency 只在 judge);③ claim_verification 两边都弱;④ cost_usd 没算(用 token 比)。
+- **产物**:`report/small_v1/EVAL_REPORT.md` + 4 SVG 图(routing/factual boxplot/cost scatter/verification)+ 2 CSV + summary.json;`scripts/make_charts.py`(matplotlib,`[report]` extra)。`runs/` gitignore,成果落 `report/`(进 git)。
+- **下一步(可选)**:修 mcp-test-runner 的 pytest(`python -m pytest`)→ 干净 re-run;扩 40-repo;把 headline number 写进简历 bullet。
 
 ### 2026-06-14 — cost 来源 + 全量跑 driver + benchmark CLI
 

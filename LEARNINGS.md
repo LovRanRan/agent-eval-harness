@@ -28,6 +28,29 @@
 
 - pytest node IDs — https://docs.pytest.org/en/stable/how-to/usage.html#specifying-which-tests-to-run
 
+## First full benchmark run — Supervisor vs ReAct (2026-06-14)
+
+### 🧠 Concepts internalized
+
+- The point of an eval is the *surprising* number. I expected the Supervisor to win on factual accuracy; it didn't (0.62 vs 0.73). What it decisively won was **cost — ~11× fewer tokens (77k vs 885k)** — plus the only real verification. A good benchmark reorders your priors.
+- Metric asymmetry is real: routing_accuracy is meaningless for a router-less baseline (ReAct = 0 by construction), so it's a within-system signal, not a head-to-head. Reports must say which comparisons are fair.
+- "Cost" fell out for free once tokens were captured on both sides — the strongest, most defensible resume number turned out to be the efficiency ratio, not an accuracy delta.
+
+### ⚠️ Gotchas debugged
+
+- A misconfigured tool silently distorts results: ReAct's `run_pytest` (pytest not on the mcp-test-runner PATH) failed repeatedly, inflating ReAct's token count via retries and zeroing its verification. The benchmark still completed (errors-as-data), but the cost ratio is partly bug-driven — caught it by tailing the test-runner log mid-run. Always watch the tool logs during a live eval.
+- matplotlib renamed `boxplot(labels=)` → `tick_labels=`; set tick labels manually for version-robustness.
+- Long live runs must be backgrounded + polled (osascript/here-shell calls time out at ~30s); progress was tracked via the downstream services' request logs, not the silent harness.
+
+### 💼 Interview soundbites
+
+- "My harness produced a defensible headline: the Supervisor matched a ReAct baseline's factual accuracy at ~11× lower token cost, and was the only one to verify claims by executing tests — measured, not asserted."
+- "The eval also kept me honest: ReAct actually scored higher on factual_correctness, and I found a broken ReAct tool mid-run that inflated the cost gap — both are in the report rather than hidden."
+
+### 📚 Sources
+
+- run artifacts: `report/small_v1/` (EVAL_REPORT.md + 4 SVG + CSVs + summary.json)
+
 ## ReAct baseline + wayfinder verifier autonomy (2026-06-14)
 
 ### 🧠 Concepts internalized
