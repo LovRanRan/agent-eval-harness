@@ -139,6 +139,45 @@ def run_benchmark_cmd(
     return summarize_csv_dir(out, price_per_1k_usd=price_per_1k_usd)
 
 
+def rescore_cmd(
+    runs_dir: Path,
+    dataset: Path,
+    *,
+    with_judge: bool = False,
+    judge_model: str = "claude-sonnet-4-6",
+    judge_runs: int = 3,
+    price_per_1k_usd: float = 0.0,
+) -> dict[str, object]:
+    """Re-score persisted `<arch>.runs.jsonl` in `runs_dir` without re-running agents.
+
+    Default metrics are the deterministic three (routing + verification +
+    citation_grounding, using the repo clones already in `runs_dir/repos`), which
+    re-score for free. Pass `with_judge` to also recompute factual_correctness
+    (incurs Claude API cost).
+    """
+    from agent_eval_harness.citations import RepoSymbolResolver
+    from agent_eval_harness.experiment import rescore_from_runs
+
+    tasks = load_tasks(dataset)
+    resolver = RepoSymbolResolver([runs_dir / "repos"])
+    from agent_eval_harness.metric import CitationGrounding
+
+    metrics: list[Metric] = [RoutingAccuracy(), VerificationRate(), CitationGrounding(resolver)]
+    if with_judge:
+        from agent_eval_harness.judge import (
+            AnthropicChatModel,
+            FactualCorrectnessJudge,
+            SelfConsistentJudge,
+        )
+        from agent_eval_harness.metric import JudgeMetric
+
+        judge = SelfConsistentJudge(
+            FactualCorrectnessJudge(AnthropicChatModel(judge_model)), runs=judge_runs
+        )
+        metrics.append(JudgeMetric(judge))
+    return rescore_from_runs(runs_dir, tasks, metrics, price_per_1k_usd=price_per_1k_usd)
+
+
 def _build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(prog="agent-eval", description="agent-eval-harness runner")
     sub = parser.add_subparsers(dest="command", required=True)
@@ -161,6 +200,22 @@ def _build_parser() -> argparse.ArgumentParser:
         choices=ARCHITECTURES,
         help="restrict to an architecture (repeatable); default runs all",
     )
+
+    rescore = sub.add_parser(
+        "rescore", help="re-score persisted runs in a dir without re-running agents"
+    )
+    rescore.add_argument("--runs-dir", required=True, type=Path, help="dir with <arch>.runs.jsonl")
+    rescore.add_argument("--dataset", required=True, type=Path, help="path to the tasks.jsonl file")
+    rescore.add_argument(
+        "--with-judge",
+        action="store_true",
+        help="also recompute factual_correctness (incurs Claude API cost)",
+    )
+    rescore.add_argument("--judge-model", default="claude-sonnet-4-6", help="LLM-as-judge model")
+    rescore.add_argument("--runs", type=int, default=3, help="self-consistency judge runs")
+    rescore.add_argument(
+        "--price-per-1k", type=float, default=0.0, help="USD per 1k tokens for cost column"
+    )
     return parser
 
 
@@ -180,6 +235,17 @@ def main(argv: Sequence[str] | None = None) -> int:
             archs=args.arch,
         )
         print(f"benchmark written to {args.out} (see summary.json)")
+        return 0
+    if args.command == "rescore":
+        rescore_cmd(
+            args.runs_dir,
+            args.dataset,
+            with_judge=args.with_judge,
+            judge_model=args.judge_model,
+            judge_runs=args.runs,
+            price_per_1k_usd=args.price_per_1k,
+        )
+        print(f"rescored {args.runs_dir} (see summary.json)")
         return 0
     return 1
 

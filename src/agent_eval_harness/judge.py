@@ -144,7 +144,11 @@ class AnthropicChatModel:
             max_tokens=self._max_tokens,
             messages=[{"role": "user", "content": prompt}],
         )
-        parts = [block.text for block in message.content if getattr(block, "type", None) == "text"]
+        # Only text blocks carry `.text`; getattr keeps mypy happy across the SDK's
+        # block union (tool-use/thinking/etc. blocks have no text attribute).
+        parts = [
+            t for block in message.content if isinstance(t := getattr(block, "text", None), str)
+        ]
         return "".join(parts)
 
 

@@ -144,7 +144,15 @@ hard_deadline: 2026-10-15   # OSS v0.5 + 文章
 - **诚实定位**:factual 是 wayfinder 真短板(0.48 vs 0.70,难集上更宽);citation 打平偏弱不幻觉;赢面=成本 12× + 0 错误 + 路由/验证(后两者结构性)。
 - **成本真相**:今晚 OpenAI 实扣 ~$31(auto-recharge 真金白银,非免费 credit),几乎全是 ReAct 烧的——账单本身印证 12× 成本差。judge(Claude)便宜且对比中抵消。
 - **prompt 决策**:wayfinder synthesizer prompt 改动效果主要被 resolver 覆盖、且略伤 factual → 已 `git stash`(未提交),committed 代码数字更好。
-- **owed / 待办**:① harness 加「持久化 agent 答案 → 离线重打分」(避免改 metric 就重跑烧钱)+ 逐任务进度日志;② 数据集 GT 待 Haichuan 审才能上简历。
+- **owed / 待办**:① ~~harness 加「持久化答案 → 离线重打分」+ 逐任务进度日志~~ ✅ 已做(见下);② 数据集 GT 待 Haichuan 审才能上简历。
+
+### 2026-06-15 — feat:离线重打分 + 逐任务进度(省钱基建)
+
+- **逐任务进度**(`evaluate.py`):`AGENT_EVAL_PROGRESS=1` 时每任务往 stderr 打 `[k/N] arch·task·bucket·status·tokens·latency`,不污染 CSV、默认关闭(测试静默)。长 benchmark 不再是黑盒。
+- **持久化 + 离线重打分**(`persistence.py` + `experiment.rescore_from_runs` + `cli rescore`):`run_benchmark` 现在把每臂的原始 `RunResult` 存成 `<arch>.runs.jsonl`;`agent-eval rescore --runs-dir <dir> --dataset <f>` 用存下来的答案重新打分,**不重跑 agent**。默认只跑确定性指标(routing/verification/citation,用已有 repo 克隆)= **$0**;`--with-judge` 才调 Claude 重算 factual。
+- **为什么**:今晚 resolver 改完为了重新评分,把 ReAct 4.8M-token 臂整个重跑了一遍(纯浪费、烧真钱)。以后改 metric → `rescore` 离线重算,确定性指标免费。`evaluate` 拆成 `run_architecture`(跑)+ `score_results`(打分),互不耦合。
+- **顺手修**:`judge.py` 取 message text 用 `getattr` 守卫,清掉装了 anthropic 后 `mypy --strict` 的 11 个 union-attr 报错(之前只在装了 llm extra 的本地环境暴露)。
+- **gate**:ruff / ruff-format / mypy --strict(13 files)/ pytest **73 passed** 全绿。新增 `test_persistence.py`(round-trip + 枚举消毒 + rescore 无 runner 复现)+ `test_evaluate.py` 进度测试。
 
 ### 2026-06-15 — citation metric 缺陷发现 + 修复(resolver 误判真实属性引用)
 

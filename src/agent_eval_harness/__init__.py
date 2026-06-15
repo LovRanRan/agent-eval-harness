@@ -24,9 +24,16 @@ from agent_eval_harness.datasets import (
     load_tasks,
     validate_task,
 )
-from agent_eval_harness.evaluate import EvalRow, evaluate, write_csv
+from agent_eval_harness.evaluate import (
+    EvalRow,
+    evaluate,
+    run_architecture,
+    score_results,
+    write_csv,
+)
 from agent_eval_harness.experiment import (
     clone_repos_for_resolution,
+    rescore_from_runs,
     run_benchmark,
     summarize,
     summarize_csv_dir,
@@ -47,6 +54,12 @@ from agent_eval_harness.metric import (
     RoutingAccuracy,
     SymbolResolver,
     VerificationRate,
+)
+from agent_eval_harness.persistence import (
+    read_run_results,
+    runresult_from_dict,
+    runresult_to_dict,
+    write_run_results,
 )
 from agent_eval_harness.runner import (
     AgentInvoke,
@@ -96,9 +109,16 @@ __all__ = [
     "evaluate",
     "extract_cited_symbols",
     "load_tasks",
+    "read_run_results",
+    "rescore_from_runs",
+    "run_architecture",
     "run_benchmark",
+    "runresult_from_dict",
+    "runresult_to_dict",
+    "score_results",
     "summarize",
     "summarize_csv_dir",
     "validate_task",
     "write_csv",
+    "write_run_results",
 ]

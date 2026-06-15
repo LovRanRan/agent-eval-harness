@@ -18,8 +18,9 @@ from typing import Any
 
 from agent_eval_harness.citations import default_repo_slug
 from agent_eval_harness.datasets import Task
-from agent_eval_harness.evaluate import EvalRow, evaluate, write_csv
+from agent_eval_harness.evaluate import EvalRow, run_architecture, score_results, write_csv
 from agent_eval_harness.metric import Metric
+from agent_eval_harness.persistence import read_run_results, write_run_results
 from agent_eval_harness.runner import Runner
 
 
@@ -121,14 +122,44 @@ def run_benchmark(
     *,
     price_per_1k_usd: float = 0.0,
 ) -> dict[str, list[EvalRow]]:
-    """Run every architecture over `tasks`, write per-arch CSVs + summary.json."""
+    """Run every architecture over `tasks`, write per-arch CSVs + summary.json.
+
+    Each arch's raw `RunResult`s are also persisted to `<arch>.runs.jsonl` so the
+    sweep can be re-scored later (e.g. after a metric fix) without re-running the
+    agents — see `rescore_from_runs`.
+    """
     out_dir.mkdir(parents=True, exist_ok=True)
     rows_by_arch: dict[str, list[EvalRow]] = {}
     for arch, runner in runners.items():
-        rows = evaluate(tasks, runner, metrics)
+        results = run_architecture(tasks, runner)
+        write_run_results(results, out_dir / f"{arch}.runs.jsonl")
+        rows = score_results(results, tasks, metrics)
         write_csv(rows, out_dir / f"{arch}.csv")
         rows_by_arch[arch] = rows
     # Summarize across ALL CSVs in the dir (including any architecture not re-run
     # this invocation), so a single-arch re-run merges with existing results.
     summarize_csv_dir(out_dir, price_per_1k_usd=price_per_1k_usd)
     return rows_by_arch
+
+
+def rescore_from_runs(
+    out_dir: Path,
+    tasks: Sequence[Task],
+    metrics: Sequence[Metric],
+    *,
+    price_per_1k_usd: float = 0.0,
+) -> dict[str, Any]:
+    """Re-score persisted `<arch>.runs.jsonl` under `metrics`, rewriting CSVs + summary.
+
+    This avoids re-running the agents: deterministic metrics (routing, citation,
+    verification) re-score for free; only an LLM judge metric re-incurs cost. Use
+    it after fixing a metric/resolver to refresh numbers without paying again.
+    """
+    rows_by_arch: dict[str, list[EvalRow]] = {}
+    for runs_path in sorted(out_dir.glob("*.runs.jsonl")):
+        arch = runs_path.name.removesuffix(".runs.jsonl")
+        results = read_run_results(runs_path)
+        rows = score_results(results, tasks, metrics)
+        write_csv(rows, out_dir / f"{arch}.csv")
+        rows_by_arch[arch] = rows
+    return summarize_csv_dir(out_dir, price_per_1k_usd=price_per_1k_usd)
