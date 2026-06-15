@@ -29,6 +29,7 @@ from agent_eval_harness.experiment import (
     clone_repos_for_resolution,
     run_benchmark,
     summarize,
+    summarize_csv_dir,
 )
 from agent_eval_harness.judge import (
     AnthropicChatModel,
@@ -97,6 +98,7 @@ __all__ = [
     "load_tasks",
     "run_benchmark",
     "summarize",
+    "summarize_csv_dir",
     "validate_task",
     "write_csv",
 ]

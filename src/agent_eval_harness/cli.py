@@ -118,21 +118,25 @@ def run_benchmark_cmd(
     judge_model: str = "claude-sonnet-4-6",
     judge_runs: int = 3,
     price_per_1k_usd: float = 0.0,
+    archs: Sequence[str] | None = None,
 ) -> dict[str, object]:
-    """Full benchmark: both architectures × all 4 metrics → CSVs + summary.json."""
-    from agent_eval_harness.experiment import (
-        clone_repos_for_resolution,
-        run_benchmark,
-        summarize,
-    )
+    """Benchmark architectures × all 4 metrics → CSVs + summary.json.
 
+    `archs` restricts which architectures run (default: all); a single-arch run
+    merges with any existing sibling CSVs in `out` when summarizing.
+    """
+    from agent_eval_harness.experiment import clone_repos_for_resolution, run_benchmark
+
+    selected = list(archs) if archs else list(ARCHITECTURES)
     tasks = load_tasks(dataset)
     resolution_root = out / "repos"
     clone_repos_for_resolution(tasks, resolution_root)
     metrics = _build_live_metrics(resolution_root, judge_model=judge_model, judge_runs=judge_runs)
-    runners = {arch: build_runner(arch) for arch in ARCHITECTURES}
-    rows_by_arch = run_benchmark(tasks, runners, metrics, out, price_per_1k_usd=price_per_1k_usd)
-    return summarize(rows_by_arch, price_per_1k_usd=price_per_1k_usd)
+    runners = {arch: build_runner(arch) for arch in selected}
+    run_benchmark(tasks, runners, metrics, out, price_per_1k_usd=price_per_1k_usd)
+    from agent_eval_harness.experiment import summarize_csv_dir
+
+    return summarize_csv_dir(out, price_per_1k_usd=price_per_1k_usd)
 
 
 def _build_parser() -> argparse.ArgumentParser:
@@ -151,6 +155,12 @@ def _build_parser() -> argparse.ArgumentParser:
     bench.add_argument(
         "--price-per-1k", type=float, default=0.0, help="USD per 1k tokens for cost column"
     )
+    bench.add_argument(
+        "--arch",
+        action="append",
+        choices=ARCHITECTURES,
+        help="restrict to an architecture (repeatable); default runs all",
+    )
     return parser
 
 
@@ -167,6 +177,7 @@ def main(argv: Sequence[str] | None = None) -> int:
             judge_model=args.judge_model,
             judge_runs=args.runs,
             price_per_1k_usd=args.price_per_1k,
+            archs=args.arch,
         )
         print(f"benchmark written to {args.out} (see summary.json)")
         return 0

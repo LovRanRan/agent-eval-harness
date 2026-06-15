@@ -65,6 +65,23 @@ def test_run_benchmark_writes_csvs_and_summary(tmp_path: Path) -> None:
     assert len(rows_by_arch["supervisor"]) == 2
 
 
+def test_summarize_csv_dir_reads_back_written_csvs(tmp_path: Path) -> None:
+    from agent_eval_harness import summarize_csv_dir
+
+    runners = {
+        "supervisor": _FakeRunner("supervisor", "architecture", 1000),
+        "react": _FakeRunner("react", "debug", 500),
+    }
+    run_benchmark(_tasks(), runners, [RoutingAccuracy(), VerificationRate()], tmp_path)
+    # delete summary, rebuild it purely from the CSVs (the salvage path)
+    (tmp_path / "summary.json").unlink()
+    summary = summarize_csv_dir(tmp_path)
+    assert set(summary) == {"supervisor", "react"}
+    assert summary["supervisor"]["metrics"]["routing_accuracy"] == 1.0
+    assert summary["react"]["total_tokens"] == 1000  # 2 tasks x 500
+    assert (tmp_path / "summary.json").exists()
+
+
 def test_summarize_means_costs_and_errors() -> None:
     rows = {
         "a": [

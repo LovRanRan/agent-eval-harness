@@ -8,6 +8,7 @@ with fake runners/metrics; the live judge/resolver/runners are wired separately.
 
 from __future__ import annotations
 
+import csv
 import json
 import statistics
 import subprocess
@@ -75,6 +76,43 @@ def summarize(
     return summary
 
 
+_BASE_AND_TAIL = {"task_id", "bucket", "arch", "tokens", "cost_usd", "latency_s", "error"}
+
+
+def summarize_csv_dir(out_dir: Path, *, price_per_1k_usd: float = 0.0) -> dict[str, Any]:
+    """Rebuild the summary from `<arch>.csv` files already in `out_dir`.
+
+    Lets us re-run a single architecture and re-summarize against the other
+    architecture's existing CSV, without re-running it.
+    """
+    rows_by_arch: dict[str, list[EvalRow]] = {}
+    for csv_path in sorted(out_dir.glob("*.csv")):
+        arch = csv_path.stem
+        rows: list[EvalRow] = []
+        for record in csv.DictReader(csv_path.open(encoding="utf-8")):
+            metrics = {
+                key: float(value)
+                for key, value in record.items()
+                if key not in _BASE_AND_TAIL and value not in ("", None)
+            }
+            rows.append(
+                EvalRow(
+                    task_id=record["task_id"],
+                    bucket=record["bucket"],  # type: ignore[arg-type]
+                    arch=record["arch"],
+                    metrics=metrics,
+                    tokens=int(record.get("tokens") or 0),
+                    cost_usd=float(record.get("cost_usd") or 0.0),
+                    latency_s=float(record.get("latency_s") or 0.0),
+                    error=record.get("error") or None,
+                )
+            )
+        rows_by_arch[arch] = rows
+    summary = summarize(rows_by_arch, price_per_1k_usd=price_per_1k_usd)
+    (out_dir / "summary.json").write_text(json.dumps(summary, indent=2), encoding="utf-8")
+    return summary
+
+
 def run_benchmark(
     tasks: Sequence[Task],
     runners: Mapping[str, Runner],
@@ -90,6 +128,7 @@ def run_benchmark(
         rows = evaluate(tasks, runner, metrics)
         write_csv(rows, out_dir / f"{arch}.csv")
         rows_by_arch[arch] = rows
-    summary = summarize(rows_by_arch, price_per_1k_usd=price_per_1k_usd)
-    (out_dir / "summary.json").write_text(json.dumps(summary, indent=2), encoding="utf-8")
+    # Summarize across ALL CSVs in the dir (including any architecture not re-run
+    # this invocation), so a single-arch re-run merges with existing results.
+    summarize_csv_dir(out_dir, price_per_1k_usd=price_per_1k_usd)
     return rows_by_arch
